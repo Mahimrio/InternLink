@@ -23,6 +23,7 @@ build/
 *.tsbuildinfo
 .npm/
 .yarn/
+web/next-env.d.ts
 
 # ===== Environment files =====
 .env
@@ -69,3 +70,4 @@ Desktop.ini
 *.pem
 .vercel
 .netlify
+.opencode/
