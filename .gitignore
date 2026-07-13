@@ -1,15 +1,30 @@
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
+# ===== .NET =====
+bin/
+obj/
+out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.nuget.props
+*.nuget.targets
+.vs/
+*.dll
+*.pdb
+*.exe
 
-# Build outputs
+# ===== Node / Next.js =====
+node_modules/
+.next/
+.turbo/
+out/
 dist/
 build/
-out/
 *.tsbuildinfo
+.npm/
+.yarn/
 
-# Environment files
+# ===== Environment files =====
 .env
 .env.local
 .env.development
@@ -17,40 +32,40 @@ out/
 .env.production
 .env.*.local
 
-# IDE & Editor
-.idea/
+# ===== IDE & Editor =====
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
 .DS_Store
 
-# Logs
+# ===== Logs =====
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Testing
+# ===== Testing =====
 coverage/
 .nyc_output/
 
-# Database
+# ===== Database =====
 *.sqlite
 *.db
 *.mdf
 *.ldf
 
-# Docker
+# ===== Docker =====
 .docker/
 
-# OS
+# ===== OS =====
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Misc
+# ===== Misc =====
 *.pem
 .vercel
 .netlify
