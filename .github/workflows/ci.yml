@@ -14,8 +14,6 @@ concurrency:
 permissions:
   contents: read
 
-timeout-minutes: 15
-
 jobs:
   api-build:
     name: API build (.NET 8)
