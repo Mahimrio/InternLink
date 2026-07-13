@@ -13,13 +13,27 @@ concurrency:
 permissions:
   contents: read
 
-timeout-minutes: 10
+timeout-minutes: 15
 
 jobs:
   api-build:
     name: API build (.NET 8)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: internlink_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d internlink_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,10 +57,13 @@ jobs:
       - name: Build
         run: dotnet build InternLink.sln --no-restore --configuration Release
 
+      - name: Build Docker image
+        run: docker build -t internlink-api:test -f api/Dockerfile .
+
   web-build:
     name: Web build (Next.js)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: web
