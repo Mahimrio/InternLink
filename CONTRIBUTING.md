@@ -1,28 +1,6 @@
 # Contributing to InternLink
 
-Thank you for contributing! Please follow these guidelines to keep the project consistent and maintainable.
-
----
-
-## Quick Start (TL;DR)
-
-```bash
-# 1. Clone and setup
-git clone https://github.com/Mahimrio/InternLink.git
-cd InternLink
-
-# 2. Copy env template and generate JWT secret
-cp .env.example .env
-openssl rand -base64 32  # paste output into .env as JWT_SECRET
-
-# 3. Start full stack (API + local Postgres)
-docker compose up --build -d
-# API: http://localhost:8080  |  Swagger: http://localhost:8080/swagger
-
-# 4. Start web dev server (separate terminal)
-cd web && npm ci && npm run dev
-# Web: http://localhost:3000
-```
+Thank you for contributing! This guide covers everything needed to start contributing effectively.
 
 ---
 
@@ -30,113 +8,90 @@ cd web && npm ci && npm run dev
 
 ### 1. Environment Setup
 
-- [ ] **Install required toolchain**:
-  - .NET SDK 8.x: `winget install Microsoft.DotNet.SDK.8`
-  - Node.js 20.x LTS: `winget install OpenJS.NodeJS.LTS`
-  - Docker Desktop: `winget install Docker.DockerDesktop`
-  - Git: `winget install Git.Git`
-  - EF Core tools: `dotnet tool install --global dotnet-ef`
+**Install Prerequisites:**
+```bash
+# Windows (winget)
+winget install Microsoft.DotNet.SDK.8
+winget install OpenJS.NodeJS.LTS
+winget install Docker.DockerDesktop
+winget install Git.Git
 
-- [ ] **Verify versions**:
-  ```bash
-  dotnet --version && node --version && npm --version && docker --version && dotnet-ef --version && git --version
-  ```
+# Verify versions
+dotnet --version      # 8.0.x
+node --version        # 20.x
+npm --version         # 10.x
+docker --version      # 24.x
+dotnet-ef --version   # 8.x (install: dotnet tool install --global dotnet-ef)
+git --version         # 2.x
+```
 
-- [ ] **Copy environment template and configure**:
-  ```bash
-  cp .env.example .env
-  # Edit .env with your values (at minimum: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, JWT_SECRET)
-  ```
+**Choose Your Local Dev Workflow:**
 
-- [ ] **Generate a secure JWT secret**:
-  ```bash
-  openssl rand -base64 32
-  # Paste into .env as JWT_SECRET
-  ```
+| Workflow | When to Use | Command |
+|----------|-------------|---------|
+| **A: Docker Compose (Default)** | Full stack offline, closest to prod | `docker compose up --build -d` |
+| **B: Supabase** | Testing against real cloud DB | Edit `.env` → `docker compose up --build -d api` |
+| **C: Fully Local** | Fastest API iteration, no Docker for API | See [Workflow C](#workflow-c-fully-local-no-docker-for-api) |
+
+**Common Setup:**
+```bash
+# 1. Clone and enter repo
+git clone https://github.com/Mahimrio/InternLink.git
+cd InternLink
+
+# 2. Copy env template
+cp .env.example .env
+
+# 3. Generate JWT secret
+openssl rand -base64 32
+# Paste output into .env as JWT_SECRET=...
+
+# 4. Start (Workflow A example)
+docker compose up --build -d
+```
+
+**Verify Everything Works:**
+```bash
+# API health
+curl http://localhost:8080/swagger/index.html
+
+# Web app
+open http://localhost:3000
+
+# Check containers
+docker compose ps
+# All services should show "healthy" or "Up"
+```
+
+---
 
 ### 2. Branch Strategy
 
-| Branch | Purpose |
-|--------|---------|
-| `main` | Production-ready, protected |
-| `develop` | Integration branch for ongoing work |
-| `feature/<short-desc>` | New features, from `develop` |
-| `fix/<short-desc>` | Bug fixes, from `develop` |
-| `hotfix/<short-desc>` | Urgent production fixes, from `main` |
+| Branch | Purpose | Protection |
+|--------|---------|------------|
+| `main` | Production-ready | Protected, PR required |
+| `develop` | Integration branch | PR required |
+| `feature/<short-desc>` | New features | From `develop` |
+| `fix/<short-desc>` | Bug fixes | From `develop` |
+| `hotfix/<short-desc>` | Urgent prod fixes | From `main` |
+
+**Create a feature branch:**
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/my-feature-name
+```
+
+---
 
 ### 3. Before Coding
 
 - [ ] Pick or create an issue in GitHub Issues
 - [ ] Assign yourself to the issue
-- [ ] Create a feature branch from `develop`:
-  ```bash
-  git checkout develop && git pull && git checkout -b feature/my-feature
-  ```
-- [ ] Read existing code in the relevant area to understand patterns
-
----
-
-## Development Workflows
-
-### Option A: Full Stack with Docker (Recommended)
-
-Runs API + local Postgres in containers. Web runs separately via `npm run dev`.
-
-```bash
-# Start infrastructure
-docker compose up --build -d
-
-# Check status
-docker compose ps
-# All services should show "Up" / "healthy"
-
-# View logs
-docker compose logs -f api    # API logs
-docker compose logs -f db     # Postgres logs
-
-# Stop and clean
-docker compose down -v        # -v removes the pgdata volume
-```
-
-**Switch to Supabase instead of local DB:**
-```bash
-# Edit .env with your Supabase credentials
-# POSTGRES_USER=your-supabase-user
-# POSTGRES_PASSWORD=your-supabase-password
-# POSTGRES_DB=your-supabase-db
-
-# Start only the API (no local db)
-docker compose up --build -d api
-```
-
-### Option B: Local Development (No Docker for API)
-
-```bash
-# Terminal 1: API
-cd api
-dotnet restore
-dotnet run
-# Runs on http://localhost:5000 / https://localhost:5001
-
-# Terminal 2: Web
-cd web
-npm ci
-npm run dev
-# Runs on http://localhost:3000
-
-# Terminal 3 (optional): Postgres
-docker compose up -d db
-# Or use your own Postgres instance
-```
-
-### Option C: Web Only (Frontend Focus)
-
-```bash
-cd web
-npm ci
-npm run dev
-# Uses mock/empty API calls — good for UI work
-```
+- [ ] Create feature branch from `develop` (see above)
+- [ ] Read existing code in the relevant area to understand patterns:
+  - **API**: `api/Controllers/`, `api/Services/`, `api/DTOs/`
+  - **Web**: `web/components/`, `web/lib/api-client.ts`, `web/app/`
 
 ---
 
@@ -144,109 +99,79 @@ npm run dev
 
 ### Code Style
 
-| Language | Rules |
-|----------|-------|
-| **C#** | .NET naming conventions, `dotnet format` before commit |
-| **TypeScript/React** | ESLint + Prettier (`npm run lint`, `npm run format`) |
-| **Commits** | Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:` |
-| **Commits** | One logical change per commit; reference issue (`#123`) |
+| Language | Tools | Commands |
+|----------|-------|----------|
+| **C#** | .NET conventions, `dotnet format` | `dotnet format` (run in `api/`) |
+| **TypeScript/React** | ESLint + Prettier | `npm run lint` / `npm run format` (run in `web/`) |
 
-### Project Structure (Know Where Things Go)
+**Commit Messages:** Conventional Commits — `type(scope): description`
+- Imperative mood, lowercase, no trailing period
+- Reference issue: `feat(api): add job search endpoint #42`
+- Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `style`
 
-```
-api/                          # ASP.NET Core 8 Web API
-  Controllers/
-    Student/ Company/ Admin/ Counselor/   # Route-grouped: api/student/*, api/company/*
-  Models/                     # EF Core entities (internal)
-  DTOs/                       # Response DTOs: <Entity>Dto (JobDto, ApplicationDto)
-  ViewModels/                 # Request DTOs for auth: <Action><Entity>RequestDto (LoginRequestDto)
-  Data/                       # ApplicationDbContext, Migrations/
-  Repositories/
-    Interface/                # Repository contracts
-    Implementation/           # EF Core implementations
-  Services/                   # Business logic (AIService, ResumeService, RecommendationService)
-  Helpers/
-  Program.cs                  # DI, middleware, Swagger
-  appsettings.json            # Structure only — real values via env vars / user-secrets
-
-web/                          # Next.js 14+ (App Router, TS, Tailwind)
-  app/                        # App Router pages & Route Handlers (BFF)
-  components/
-    student/ company/ admin/ counselor/ shared/  # By feature, NOT flat
-  lib/
-    api-client.ts             # SINGLE typed API client — no fetch() in components
-  styles/                     # Global styles only
-
-docs/diagrams/                # Architecture diagrams
-.github/workflows/            # CI pipelines
-```
-
-### Backend Conventions (Critical)
-
-- **Controllers return DTOs only — never EF entities directly**
-  - Response: `JobDto`, `ApplicationDto`, `StudentDto`
-  - Request: `CreateJobRequestDto`, `UpdateProfileRequestDto`, `LoginRequestDto`
-- **Business logic lives in `Services/`, not `Controllers/`**
-  - Controllers: parse request → call service → return DTO
-- **Repositories**: interfaces in `Repositories/Interface/`, impl in `Repositories/Implementation/`
-  - Controllers depend on interfaces, never on `ApplicationDbContext` directly
-- **Async everywhere**: every async method ends with `Async` and takes `CancellationToken`:
-  ```csharp
-  public async Task<JobDto?> GetByIdAsync(int id, CancellationToken ct)
-  ```
-- **Routing**: grouped by role, versioned by path:
-  - `api/auth/*` (unscoped: login, register, refresh, logout, OAuth)
-  - `api/student/*` · `api/company/*` · `api/admin/*` · `api/counselor/*`
-- **Error response shape** — every error path returns this exact JSON:
-  ```json
-  { "error": "Human-readable message", "details": { } }
-  ```
-  - `400` validation · `401` unauthenticated · `403` wrong role / unverified email · `404` not found · `409` conflict (e.g. duplicate application) · `500` unexpected
-
-### Frontend Conventions
-
-- **Tailwind only** — no `style=`, no CSS modules (unless justified in comment)
-- **Components by feature**: `components/student/`, `components/shared/`, etc.
-- **Single API client**: all HTTP via `lib/api-client.ts` — no scattered `fetch()`
-- **Server Components by default** — add `"use client"` only when interactivity requires it
-- **Forms**: `react-hook-form` + `zod` schemas that **mirror API request DTOs** field-for-field
+---
 
 ### Database Changes
 
-- [ ] Create EF Core migration:
-  ```bash
-  dotnet ef migrations add MigrationName -p api/InternLinkApi.csproj -s api/InternLinkApi.csproj
-  ```
-- [ ] Review generated migration SQL
-- [ ] Test migration up/down locally
+```bash
+# 1. Create migration (from api/ directory)
+cd api
+dotnet ef migrations add MigrationName -p InternLinkApi.csproj -s InternLinkApi.csproj
+
+# 2. Review generated SQL in Migrations/*MigrationName.cs
+
+# 3. Test locally
+dotnet ef database update          # Apply
+dotnet ef database update 0        # Rollback to test down migration
+dotnet ef database update          # Re-apply
+```
+
+---
 
 ### API Changes
 
-- [ ] Update OpenAPI/Swagger annotations
-- [ ] Update or add integration tests
-- [ ] Document breaking changes in PR description
+- **Controllers**: Thin — parse request → call service → return DTO
+- **DTOs**: 
+  - Response: `<Entity>Dto` (e.g., `JobDto`, `StudentDto`)
+  - Request: `<Action><Entity>RequestDto` (e.g., `CreateJobRequestDto`, `UpdateProfileRequestDto`)
+  - Auth: in `ViewModels/` (e.g., `LoginRequestDto`, `RegisterRequestDto`)
+- **Business Logic**: In `Services/` — never in Controllers
+- **Repositories**: Interfaces in `Repositories/Interface/`, impl in `Repositories/Implementation/`
+- **Async**: All async methods end with `Async`, accept `CancellationToken`
+- **Errors**: Always return `{ "error": "message", "details": {} }` with correct status code
+
+---
 
 ### Frontend Changes
 
-- [ ] Run type check: `npm run typecheck` (in `web/`)
-- [ ] Run lint: `npm run lint` (in `web/`)
-- [ ] Test in browser (`npm run dev`)
-- [ ] Ensure responsive design works
+- **Components by feature**: `components/student/`, `components/shared/`, etc.
+- **Single API client**: All HTTP via `lib/api-client.ts` — no `fetch()` in components
+- **Server Components by default**: Add `"use client"` only when needed
+- **Forms**: `react-hook-form` + `zod` schemas mirroring API request DTOs
+- **Route Handlers**: BFF only — proxy, cookies, NO business logic
+
+---
 
 ### Testing
 
-- [ ] Write unit tests for new logic (xUnit for .NET, Vitest/Jest for frontend)
-- [ ] Run existing tests: `dotnet test` / `npm test`
-- [ ] All tests must pass before PR
+- **Write unit tests** for new logic:
+  - C#: xUnit in `api/` test project
+  - TS: Vitest/Jest in `web/`
+- **Run existing tests before PR:**
+  ```bash
+  # API
+  cd api && dotnet test
+
+  # Web
+  cd web && npm test
+  ```
+- All tests must pass before PR
 
 ---
 
 ## Before Opening a Pull Request
 
-- [ ] Rebase onto latest `develop`:
-  ```bash
-  git fetch origin && git rebase origin/develop
-  ```
+- [ ] Rebase onto latest `develop`: `git fetch origin && git rebase origin/develop`
 - [ ] Run full test suite locally
 - [ ] Run linters/formatters:
   ```bash
@@ -255,7 +180,7 @@ docs/diagrams/                # Architecture diagrams
   ```
 - [ ] Update documentation if behavior changed (README, API docs, comments)
 - [ ] Self-review your diff: `git diff develop...HEAD`
-- [ ] Write a clear PR description:
+- [ ] Write clear PR description:
   - What problem does this solve?
   - How was it tested?
   - Any breaking changes?
@@ -265,7 +190,7 @@ docs/diagrams/                # Architecture diagrams
 
 ## Pull Request Process
 
-1. Open PR against `develop` (not `main`)
+1. **Open PR against `develop`** (not `main`)
 2. Fill out the PR template completely
 3. Request review from at least 1 team member
 4. Address all review comments (resolve conversations)
@@ -279,15 +204,15 @@ docs/diagrams/                # Architecture diagrams
 
 - [ ] Pull latest `develop`: `git checkout develop && git pull`
 - [ ] Delete local feature branch: `git branch -d feature/my-feature`
-- [ ] If deployed to staging, verify the feature works in staging environment
-- [ ] Close the associated GitHub issue (or let auto-close via "Closes #123" in PR description)
+- [ ] If deployed to staging, verify the feature works in staging
+- [ ] Close the associated GitHub issue (or use "Closes #123" in PR description)
 
 ---
 
 ## Release Process (Maintainers Only)
 
 1. Create release branch: `git checkout -b release/v1.x.x develop`
-2. Version bump, update CHANGELOG.md
+2. Version bump, update `CHANGELOG.md`
 3. PR to `main` with version bump
 4. Tag release: `git tag -a v1.x.x -m "Release v1.x.x"`
 5. Deploy to production
@@ -315,9 +240,42 @@ docs/diagrams/                # Architecture diagrams
 ## TL;DR Checklist for Every PR
 
 - [ ] Branched from `develop`
-- [ ] Tests pass locally
-- [ ] Lint/format clean
-- [ ] Docs updated
-- [ ] PR description complete
-- [ ] CI green
-- [ ] Reviewed & approved
+- [ ] Tests pass locally (`dotnet test` / `npm test`)
+- [ ] Lint/format clean (`dotnet format` / `npm run lint && npm run format`)
+- [ ] Docs updated (README, API docs, comments)
+- [ ] PR description complete (problem, testing, breaking changes, screenshots)
+- [ ] CI green (GitHub Actions: `api-build`, `web-build`)
+- [ ] Reviewed & approved by at least 1 team member
+
+---
+
+## Quick Reference Commands
+
+```bash
+# Full stack (Workflow A)
+docker compose up --build -d
+cd web && npm ci && npm run dev
+
+# API with Supabase (Workflow B)
+# Edit .env with Supabase creds first
+docker compose up --build -d api
+
+# Local dev (Workflow C)
+docker compose up -d db redis minio mailhog
+cd api && dotnet run
+cd web && npm run dev
+
+# Tests
+cd api && dotnet test
+cd web && npm test
+
+# Lint/format
+dotnet format
+cd web && npm run lint && npm run format
+
+# Create migration
+cd api && dotnet ef migrations add Name -p InternLinkApi.csproj -s InternLinkApi.csproj
+
+# View CI logs
+gh run view <run-id> --log
+```
