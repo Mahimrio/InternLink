@@ -5,14 +5,14 @@ using System.Text;
 using InternLinkApi.Data;
 using InternLinkApi.DTOs;
 using InternLinkApi.Models;
-using InternLinkApi.Models.Enums;
-using StudentModel = InternLinkApi.Models.Student;
-using CompanyModel = InternLinkApi.Models.Company;
+using InternLinkApi.Services.EmailSender;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StudentModel = InternLinkApi.Models.Student;
+using CompanyModel = InternLinkApi.Models.Company;
 
 namespace InternLinkApi.Controllers;
 
@@ -24,17 +24,20 @@ public class AuthController : ControllerBase
     private readonly RoleManager<Role> _roleManager;
     private readonly ApplicationDbContext _db;
     private readonly IConfiguration _configuration;
+    private readonly IEmailSender _emailSender;
 
     public AuthController(
         UserManager<User> userManager,
         RoleManager<Role> roleManager,
         ApplicationDbContext db,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IEmailSender emailSender)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _db = db;
         _configuration = configuration;
+        _emailSender = emailSender;
     }
 
     [HttpPost("register")]
@@ -126,9 +129,94 @@ public class AuthController : ControllerBase
             return Unauthorized(new { error = "Email not confirmed. Please confirm your email before logging in." });
         }
 
-        // OTP insertion point: Prompt 11 can insert a step here between credential
-        // verification and token issuance without restructuring this method.
-        return Ok(await IssueTokensAsync(user));
+        var (otpToken, plainCode) = await GenerateAndStoreOtpAsync(user);
+
+        await _emailSender.SendAsync(
+            user.Email!,
+            "Your InternLink verification code",
+            $"""
+            <p>Your verification code is:</p>
+            <h2 style="font-size: 28px; letter-spacing: 4px; text-align: center;">{plainCode}</h2>
+            <p>This code expires in 5 minutes.</p>
+            """);
+
+        return Accepted(new { otpRequired = true, otpToken });
+    }
+
+    [HttpPost("verify-otp")]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new { error = "Validation failed.", details = ModelState });
+
+        var codeHash = ComputeSha256Hash(dto.Code);
+        var otpCode = await _db.OtpCodes
+            .Include(oc => oc.User)
+            .FirstOrDefaultAsync(oc => oc.Id == Guid.Parse(dto.OtpToken));
+
+        if (otpCode is null || otpCode.CodeHash != codeHash)
+            return Unauthorized(new { error = "Invalid or expired code." });
+
+        if (otpCode.ExpiresAt < DateTimeOffset.UtcNow)
+            return Unauthorized(new { error = "Invalid or expired code." });
+
+        if (otpCode.ConsumedAt is not null)
+            return Unauthorized(new { error = "Invalid or expired code." });
+
+        otpCode.ConsumedAt = DateTimeOffset.UtcNow;
+        _db.OtpCodes.Update(otpCode);
+        await _db.SaveChangesAsync();
+
+        return Ok(await IssueTokensAsync(otpCode.User));
+    }
+
+    [HttpPost("resend-otp")]
+    public async Task<IActionResult> ResendOtp([FromBody] ResendOtpRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new { error = "Validation failed.", details = ModelState });
+
+        var otpCode = await _db.OtpCodes
+            .Include(oc => oc.User)
+            .FirstOrDefaultAsync(oc => oc.Id == Guid.Parse(dto.OtpToken));
+
+        if (otpCode is null || otpCode.ConsumedAt is not null)
+            return Unauthorized(new { error = "Invalid or expired session." });
+
+        var user = otpCode.User;
+
+        // Rate limit: max 1 resend per 30 seconds per user
+        var lastOtp = await _db.OtpCodes
+            .Where(oc => oc.UserId == user.Id)
+            .OrderByDescending(oc => oc.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (lastOtp is not null)
+        {
+            var elapsed = DateTimeOffset.UtcNow - lastOtp.CreatedAt;
+            if (elapsed.TotalSeconds < 30)
+            {
+                Response.Headers.RetryAfter = ((int)(30 - elapsed.TotalSeconds)).ToString();
+                return StatusCode(429, new { error = "Please wait before requesting a new code." });
+            }
+        }
+
+        // Invalidate previous code
+        otpCode.ConsumedAt = DateTimeOffset.UtcNow;
+        _db.OtpCodes.Update(otpCode);
+
+        var (newOtpToken, plainCode) = await GenerateAndStoreOtpAsync(user);
+
+        await _emailSender.SendAsync(
+            user.Email!,
+            "Your InternLink verification code",
+            $"""
+            <p>Your verification code is:</p>
+            <h2 style="font-size: 28px; letter-spacing: 4px; text-align: center;">{plainCode}</h2>
+            <p>This code expires in 5 minutes.</p>
+            """);
+
+        return Accepted(new { otpRequired = true, otpToken = newOtpToken });
     }
 
     [HttpPost("refresh")]
@@ -182,6 +270,33 @@ public class AuthController : ControllerBase
         }
 
         return Ok(new { message = "Logged out successfully." });
+    }
+
+    private async Task<(string otpToken, string plainCode)> GenerateAndStoreOtpAsync(User user)
+    {
+        var plainCode = GenerateOtpCode();
+        var codeHash = ComputeSha256Hash(plainCode);
+
+        var otpCode = new OtpCode
+        {
+            UserId = user.Id,
+            CodeHash = codeHash,
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(5),
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+
+        _db.OtpCodes.Add(otpCode);
+        await _db.SaveChangesAsync();
+
+        return (otpCode.Id.ToString(), plainCode);
+    }
+
+    private static string GenerateOtpCode()
+    {
+        var bytes = new byte[4];
+        RandomNumberGenerator.Fill(bytes);
+        var val = BitConverter.ToUInt32(bytes, 0) % 1_000_000;
+        return val.ToString("D6");
     }
 
     private async Task<AuthResponseDto> IssueTokensAsync(User user, Guid? replacedTokenId = null)

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text;
 using InternLinkApi.Data;
 using InternLinkApi.Models;
+using InternLinkApi.Services.EmailSender;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +71,15 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("CompanyOnly", p => p.RequireRole("Company"))
     .AddPolicy("AdminOnly", p => p.RequireRole("Admin"))
     .AddPolicy("CounselorOnly", p => p.RequireRole("Counselor"));
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<IEmailSender, DevEmailSender>();
+}
+else
+{
+    builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+}
 
 var app = builder.Build();
 

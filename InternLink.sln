@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InternLinkApi", "api\InternLinkApi.csproj", "{ED84B490-A123-4328-AF7B-0C3000852643}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InternLinkApi.Tests", "tests\InternLinkApi.Tests.csproj", "{27793D7D-B661-468F-A7C1-504D4B9F37A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{ED84B490-A123-4328-AF7B-0C3000852643}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED84B490-A123-4328-AF7B-0C3000852643}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED84B490-A123-4328-AF7B-0C3000852643}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27793D7D-B661-468F-A7C1-504D4B9F37A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27793D7D-B661-468F-A7C1-504D4B9F37A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27793D7D-B661-468F-A7C1-504D4B9F37A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27793D7D-B661-468F-A7C1-504D4B9F37A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
