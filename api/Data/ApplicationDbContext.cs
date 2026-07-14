@@ -25,6 +25,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<CounselorFeedback> CounselorFeedbacks => Set<CounselorFeedback>();
     public DbSet<AIHistory> AIHistories => Set<AIHistory>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -187,6 +188,26 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
             .WithMany(s => s.JobSkills)
             .HasForeignKey(js => js.SkillId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // ----- User -> RefreshTokens -----
+        builder.Entity<RefreshToken>()
+            .ToTable("RefreshTokens")
+            .HasKey(rt => rt.Id);
+
+        builder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithMany()
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<RefreshToken>()
+            .HasOne(rt => rt.ReplacedByToken)
+            .WithMany()
+            .HasForeignKey(rt => rt.ReplacedByTokenId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<RefreshToken>()
+            .HasIndex(rt => rt.UserId);
 
         // ----- JSON column -----
         builder.Entity<Resume>()
