@@ -9,4 +9,5 @@ public class CounselorFeedback
     public DateTimeOffset MeetingDate { get; set; }
 
     public Student Student { get; set; } = null!;
+    public User CounselorUser { get; set; } = null!;
 }
