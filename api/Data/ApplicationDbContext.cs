@@ -26,6 +26,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
     public DbSet<CounselorFeedback> CounselorFeedbacks => Set<CounselorFeedback>();
     public DbSet<AIHistory> AIHistories => Set<AIHistory>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -208,6 +209,20 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
 
         builder.Entity<RefreshToken>()
             .HasIndex(rt => rt.UserId);
+
+        // ----- User -> OtpCodes -----
+        builder.Entity<OtpCode>()
+            .ToTable("OtpCodes")
+            .HasKey(oc => oc.Id);
+
+        builder.Entity<OtpCode>()
+            .HasOne(oc => oc.User)
+            .WithMany()
+            .HasForeignKey(oc => oc.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<OtpCode>()
+            .HasIndex(oc => new { oc.UserId, oc.CreatedAt });
 
         // ----- JSON column -----
         builder.Entity<Resume>()
