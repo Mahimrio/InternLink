@@ -144,7 +144,37 @@ See `.env.example` for all configurable options. Required for local dev:
 
 ---
 
-## Project Structure
+## Database Connection Strings
+
+The API reads the connection string from `ConnectionStrings:SupabaseDb` (set via the `ConnectionStrings__SupabaseDb` environment variable or `appsettings.json`).
+
+### Local PostgreSQL (via Docker Compose)
+
+```
+Host=db;Port=5432;Database=internlink_dev;Username=postgres;Password=postgres;Include Error Detail=true
+```
+
+The host is `db` (the Compose service name). `Include Error Detail=true` is safe in Development because the database is not exposed to the internet.
+
+### Supabase (Development — Direct Connection)
+
+```
+Host=<project>.supabase.co;Port=5432;Database=postgres;Username=<user>;Password=<password>;SSL Mode=Require;Trust Server Certificate=true
+```
+
+Get these values from Supabase Dashboard → **Project Settings** → **Database**. The `SSL Mode=Require` and `Trust Server Certificate=true` are required — Supabase enforces TLS on all connections.
+
+### Supabase (Production / Render — Pooled via Supavisor)
+
+```
+Host=<project>.supabase.co;Port=6543;Database=postgres;Username=<user>.pooler;Password=<password>;SSL Mode=Require;Trust Server Certificate=true
+```
+
+> ⚠️ **Use the pooler (port 6543) when deploying to Render.** Render's containers open many short-lived connections. The Supavisor pooler handles this much better than the direct connection's lower connection limit. The `Username` suffix `.pooler` is also required when connecting through the pooler.
+
+**Tip:** Switching between local and Supabase is a single `.env` change — the connection string is never hardcoded in source code.
+
+---
 
 ```
 InternLink/
