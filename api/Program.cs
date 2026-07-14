@@ -2,7 +2,10 @@ using System.Security.Claims;
 using System.Text;
 using InternLinkApi.Data;
 using InternLinkApi.Models;
+using InternLinkApi.Repositories.Implementation;
+using InternLinkApi.Repositories.Interface;
 using InternLinkApi.Services.EmailSender;
+using InternLinkApi.Services.JobService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -80,6 +83,17 @@ else
 {
     builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 }
+
+// ── Repositories ─────────────────────────────────────────────────────
+// Scoped to match DbContext lifetime. SaveChangesAsync is left to the caller
+// (service layer) so that operations spanning multiple repositories can be
+// wrapped in a single transaction.
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IJobRepository, JobRepository>();
+builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
+
+// ── Services ─────────────────────────────────────────────────────────
+builder.Services.AddScoped<IJobService, JobService>();
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]
