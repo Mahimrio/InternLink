@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using InternLinkApi.Data;
+using DotNetEnv;
 using InternLinkApi.Models;
 using InternLinkApi.Repositories.Implementation;
 using InternLinkApi.Repositories.Interface;
@@ -10,6 +11,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+
+Env.Load(Path.Combine(Directory.GetCurrentDirectory(), "..", ".env"));
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,8 +27,7 @@ var connectionString = builder.Configuration.GetConnectionString("SupabaseDb")
         + "or add it to appsettings.json under ConnectionStrings:SupabaseDb.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString, npgsqlOptions =>
-        npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3)));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddIdentity<User, Role>(options =>
     {
