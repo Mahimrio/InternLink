@@ -366,6 +366,32 @@ These accounts are created by the development seeder when the database is empty.
 
 ---
 
+## CORS Configuration
+
+The API uses a named CORS policy (`FrontendPolicy`) that restricts cross-origin requests to an explicit allowlist.
+
+| Setting | Value |
+|---------|-------|
+| Allowed origins | Read from `Cors__AllowedOrigins` env var (comma-separated) |
+| Default (Development) | `http://localhost:3000` |
+| Allowed methods | GET, POST, PUT, DELETE, OPTIONS |
+| Allowed headers | Authorization, Content-Type |
+| Credentials | Allowed (`AllowCredentials`) |
+
+Vercel preview deployment URLs (`*.vercel.app`) are also allowed automatically via a custom `SetIsOriginAllowed` predicate.
+
+### Updating for Production (Phase 8)
+
+When you finalize your Vercel production URL, update `Cors__AllowedOrigins` in Render's environment variables to include both the production URL and any preview URLs:
+
+```
+Cors__AllowedOrigins=https://your-actual-project.vercel.app,http://localhost:3000
+```
+
+For Render: Settings → Environment → Add `Cors__AllowedOrigins` with the comma-separated list.
+
+---
+
 ## Quick Reference Commands
 
 ```bash

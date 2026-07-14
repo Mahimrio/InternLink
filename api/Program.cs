@@ -81,6 +81,36 @@ else
     builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 }
 
+// ── CORS ─────────────────────────────────────────────────────────────
+var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]
+    ?? "http://localhost:3000")
+    .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins)
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .SetIsOriginAllowed(origin =>
+            {
+                // Allow explicit configured origins
+                if (allowedOrigins.Any(o =>
+                    o.Equals(origin, StringComparison.OrdinalIgnoreCase)))
+                    return true;
+
+                // Allow Vercel preview deployments: <project>-<hash>.vercel.app
+                if (origin.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                return false;
+            });
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -110,6 +140,26 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ── Security headers ─────────────────────────────────────────────────
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+
+    if (!context.Request.IsHttps)
+    {
+        // Don't set HSTS on plain HTTP (would break local dev)
+        await next();
+        return;
+    }
+    context.Response.Headers["Strict-Transport-Security"] =
+        "max-age=31536000; includeSubDomains";
+    await next();
+});
+
+app.UseCors("FrontendPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
