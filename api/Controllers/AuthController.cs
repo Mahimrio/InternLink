@@ -6,6 +6,8 @@ using InternLinkApi.Data;
 using InternLinkApi.DTOs;
 using InternLinkApi.Models;
 using InternLinkApi.Models.Enums;
+using StudentModel = InternLinkApi.Models.Student;
+using CompanyModel = InternLinkApi.Models.Company;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -77,7 +79,7 @@ public class AuthController : ControllerBase
 
         if (dto.Role == "Student")
         {
-            var student = new Student
+            var student = new StudentModel
             {
                 UserId = user.Id,
                 FirstName = dto.FirstName!,
@@ -87,7 +89,7 @@ public class AuthController : ControllerBase
         }
         else if (dto.Role == "Company")
         {
-            var company = new Company
+            var company = new CompanyModel
             {
                 UserId = user.Id,
                 CompanyName = dto.CompanyName!,
@@ -220,7 +222,7 @@ public class AuthController : ControllerBase
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.Role, _userManager.GetRolesAsync(user).Result.FirstOrDefault() ?? string.Empty),

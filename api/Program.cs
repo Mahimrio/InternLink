@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using InternLinkApi.Data;
 using InternLinkApi.Models;
@@ -60,10 +61,15 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = builder.Configuration["Jwt:Audience"] ?? "InternLinkWeb",
             IssuerSigningKey = jwtKey,
             ClockSkew = TimeSpan.Zero,
+            RoleClaimType = ClaimTypes.Role,
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("StudentOnly", p => p.RequireRole("Student"))
+    .AddPolicy("CompanyOnly", p => p.RequireRole("Company"))
+    .AddPolicy("AdminOnly", p => p.RequireRole("Admin"))
+    .AddPolicy("CounselorOnly", p => p.RequireRole("Counselor"));
 
 var app = builder.Build();
 
