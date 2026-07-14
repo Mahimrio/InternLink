@@ -71,3 +71,8 @@ Desktop.ini
 .vercel
 .netlify
 .opencode/
+.agents/
+skills-lock.json
+
+# ===== Dev scripts =====
+test-auth.ps1
