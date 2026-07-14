@@ -170,7 +170,7 @@ Get these values from Supabase Dashboard → **Project Settings** → **Database
 Host=<project>.supabase.co;Port=6543;Database=postgres;Username=<user>.pooler;Password=<password>;SSL Mode=Require;Trust Server Certificate=true
 ```
 
-> ⚠️ **Use the pooler (port 6543) when deploying to Render.** Render's containers open many short-lived connections. The Supavisor pooler handles this much better than the direct connection's lower connection limit. The `Username` suffix `.pooler` is also required when connecting through the pooler.
+>**Use the pooler (port 6543) when deploying to Render.** Render's containers open many short-lived connections. The Supavisor pooler handles this much better than the direct connection's lower connection limit. The `Username` suffix `.pooler` is also required when connecting through the pooler.
 
 **Tip:** Switching between local and Supabase is a single `.env` change — the connection string is never hardcoded in source code.
 
@@ -331,6 +331,41 @@ If a later prompt's instructions seem to conflict with anything stated here, **f
 
 ---
 
+## Database Migrations
+
+Apply pending migrations and seed development data to your database:
+
+```bash
+# Local PostgreSQL (Docker Compose must be running)
+docker compose up -d db
+dotnet ef database update --project api --startup-project api
+
+# Supabase (set ConnectionStrings__SupabaseDb in environment first)
+$env:ConnectionStrings__SupabaseDb="Host=<project>.supabase.co;Port=5432;Database=postgres;Username=<user>;Password=<password>;SSL Mode=Require;Trust Server Certificate=true"
+dotnet ef database update --project api --startup-project api
+
+# Create a new migration
+dotnet ef migrations add MigrationName --project api --startup-project api
+```
+
+On first run in Development mode (`ASPNETCORE_ENVIRONMENT=Development`), the API automatically runs `Database.MigrateAsync()` followed by `DbSeeder.SeedAsync()`, so the database is fully ready without manual steps.
+
+> ⚠️ **Seeding only runs in Development.** When `ASPNETCORE_ENVIRONMENT=Production`, neither migration nor seeding is executed automatically.
+
+### Seeded Development Credentials (Dev Only — Never Reuse)
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | `admin@internlink.test` | `Admin@123` |
+| **Student** | `student@internlink.test` | `Student@123` |
+| **Company (TechNest Solutions)** | `hr@technestsolutions.test` | `Company@123` |
+| **Company (DataForge Inc.)** | `hr@dataforgeinc.test` | `Company@123` |
+| **Company (CloudPeak Systems)** | `hr@cloudpeaksystems.test` | `Company@123` |
+
+These accounts are created by the development seeder when the database is empty. **Do not use these credentials or email addresses in production.** Change them in `api/Data/DbSeeder.cs` if you need different dev accounts.
+
+---
+
 ## Quick Reference Commands
 
 ```bash
@@ -356,7 +391,10 @@ dotnet format
 cd web && npm run lint && npm run format
 
 # Create migration
-cd api && dotnet ef migrations add Name -p InternLinkApi.csproj -s InternLinkApi.csproj
+dotnet ef migrations add Name --project api --startup-project api
+
+# Apply migration
+dotnet ef database update --project api --startup-project api
 
 # View CI logs
 gh run view <run-id> --log
