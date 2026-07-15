@@ -16,7 +16,7 @@ Connects students, companies, counselors, and admins through a single platform w
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │   ┌──────────────┐       ┌──────────────────────────┐       ┌────────────┐  │
-│   │   Browser    │──────▶│   Next.js (Vercel)       │──────▶│  ASP.NET   │  │
+│   │   Browser    │─────▶│   Next.js (Vercel)       │──────▶│  ASP.NET   │  │
 │   │  (no tokens) │       │   App Router · TS        │       │  Core 8    │  │
 │   │              │       │   Tailwind CSS           │       │  Web API   │  │
 │   │              │       │   Route Handlers = BFF   │       │  (Render)  │  │
@@ -25,20 +25,21 @@ Connects students, companies, counselors, and admins through a single platform w
 │                                       │ Bearer access token       │         │
 │                                       │ (15 min, Authorization)   │         │
 │                                       ▼                           │         │
-│                              ┌──────────────────────────┐       │         │
-│                              │   Supabase PostgreSQL    │◀──────┘         │
-│                              │   (15 tables, EF Core)   │    Npgsql       │
-│                              └──────────────────────────┘                 │
+│                              ┌──────────────────────────┐         │         │
+│                              │   Supabase PostgreSQL    │◀──────┘          │
+│                              │   (15 tables, EF Core)   │    Npgsql         │
+│                              └──────────────────────────┘                   │
 │                                                                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  AUTH FLOW                                                                  │
-│  ────────                                                                    │
+│  ────────                                                                   │
 │  1. Browser → Next.js Route Handler (BFF)                                   │
 │  2. BFF proxies to .NET API: /api/auth/login                                │
 │  3. .NET API validates, returns:                                            │
 │     - Access token (JWT, 15 min) in response body                           │
 │     - Refresh token (7 days) in httpOnly, Secure, SameSite=Lax cookie       │
-│  4. BFF sets refresh cookie on client-accessible access token (short-lived), stores refresh cookie │
+│  4. BFF sets refresh cookie on client-accessible access token               |
+|     (short-lived),stores refresh cookie                                     │
 │  5. Subsequent requests: BFF attaches Bearer token, proxies to API          │
 │  6. On 401: BFF uses refresh cookie → /api/auth/refresh → new token pair    │
 │  7. Raw tokens NEVER reach client-side JavaScript                           │
