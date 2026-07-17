@@ -23,7 +23,7 @@ export async function POST() {
     }
 
     return NextResponse.json({ success: true });
-  } catch (err: unknown) {
+  } catch {
     return NextResponse.json(
       { error: "Logout failed." },
       { status: 500 }

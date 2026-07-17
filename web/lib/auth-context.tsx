@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setState((prev) => ({ ...prev, isLoading: false }));
           }
         }
-      } catch (err) {
+      } catch {
         if (isMounted) {
           setState((prev) => ({ ...prev, isLoading: false }));
         }

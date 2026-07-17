@@ -82,6 +82,7 @@ function RegisterFormContent() {
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const role = watch("role");
 
   async function onSubmit(values: z.infer<typeof registerSchema>) {
