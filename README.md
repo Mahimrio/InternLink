@@ -16,7 +16,7 @@ Connects students, companies, counselors, and admins through a single platform w
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │   ┌──────────────┐       ┌──────────────────────────┐       ┌────────────┐  │
-│   │   Browser    │─────▶│   Next.js (Vercel)       │──────▶│  ASP.NET   │  │
+│   │   Browser    │──────>│   Next.js (Vercel)       │──────>│  ASP.NET   │  │
 │   │  (no tokens) │       │   App Router · TS        │       │  Core 8    │  │
 │   │              │       │   Tailwind CSS           │       │  Web API   │  │
 │   │              │       │   Route Handlers = BFF   │       │  (Render)  │  │
@@ -26,7 +26,7 @@ Connects students, companies, counselors, and admins through a single platform w
 │                                       │ (15 min, Authorization)   │         │
 │                                       ▼                           │         │
 │                              ┌──────────────────────────┐         │         │
-│                              │   Supabase PostgreSQL    │◀──────┘          │
+│                              │   Supabase PostgreSQL    │<────────┘         │
 │                              │   (15 tables, EF Core)   │    Npgsql         │
 │                              └──────────────────────────┘                   │
 │                                                                             │
