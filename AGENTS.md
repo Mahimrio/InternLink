@@ -112,3 +112,21 @@ Standing context for AI agents and contributors working in this monorepo. **This
 ## 9. When in doubt
 
 If a later prompt's instructions seem to conflict with anything stated here, **flag the conflict in your response** rather than silently picking one. This file is the source of truth and should be updated (via a small follow-up commit) to reflect the new decision, not quietly overridden.
+
+## 10. Visual Identity & Design System
+
+- **Component Library:** shadcn/ui (using `@base-ui/react` primitives, i.e., `render` props instead of `asChild`).
+- **Styling:** Tailwind CSS v4. Design tokens are defined via OKLCH variables in `web/app/globals.css`.
+- **Colors:**
+  - **Primary:** Deep Teal (trust, growth).
+  - **Accent:** Warm Amber (action, warmth).
+- **Typography:**
+  - **Headings/Display:** Space Grotesk (`font-heading`).
+  - **Body:** Inter (`font-sans`).
+- **UI Details:**
+  - **Border Radius:** Standardized on `0.5rem` (`rounded-lg`).
+  - **Shadows/Elevation:** Subtle `shadow-sm border` combination (avoid heavy drop shadows).
+  - **Icons:** `lucide-react` (16px for dense UI/tables, 20px for inline/nav).
+- **Layout:**
+  - Use `components/shared/page-container.tsx` (`<PageContainer>`) for standard content (max-w-7xl).
+  - Header and footer use a wider edge-to-edge layout (`max-w-[1600px]`).
