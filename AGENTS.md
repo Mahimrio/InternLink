@@ -125,8 +125,12 @@ If a later prompt's instructions seem to conflict with anything stated here, **f
   - **Body:** Inter (`font-sans`).
 - **UI Details:**
   - **Border Radius:** Standardized on `0.5rem` (`rounded-lg`).
-  - **Shadows/Elevation:** Subtle `shadow-sm border` combination (avoid heavy drop shadows).
-  - **Icons:** `lucide-react` (16px for dense UI/tables, 20px for inline/nav).
+  - **Shadows/Elevation:** Subtle `shadow-sm border` combination (avoid heavy drop shadows) for standard elements. Use `shadow-xl` combined with glassmorphism (`bg-white/80 backdrop-blur-sm`) for prominent cards (e.g. auth cards).
+  - **Icons:** `lucide-react` (16px for dense UI/tables, 20px for inline/nav). Add icons inside inputs (e.g., Mail, Lock) for auth/form fields.
+  - **Animations:** Use staggered entry animations (`animate-in fade-in slide-in-from-bottom-X`). Use subtle pulsing/glowing colored orbs in the background of main pages (Landing, Auth) to add depth.
+  - **Primary CTA Buttons:** Apply the custom `.btn-gradient-animate` class for a prominent, looping teal shimmer effect on major actions (Log In, Register, primary dashboard actions).
+- **Base UI Integration:**
+  - When replacing a Base UI `<Button>` component's underlying element with a Next.js `<Link>` (via `render={<Link href="..." />}`), you MUST pass `nativeButton={false}` to avoid React console errors about native button semantics on anchor tags.
 - **Layout:**
   - Use `components/shared/page-container.tsx` (`<PageContainer>`) for standard content (max-w-7xl).
   - Header and footer use a wider edge-to-edge layout (`max-w-[1600px]`).

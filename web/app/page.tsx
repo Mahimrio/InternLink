@@ -1,4 +1,5 @@
 import { ArrowRight, Briefcase, GraduationCap, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/shared/page-container";
 
@@ -23,10 +24,10 @@ export default function Home() {
             </span>
           </div>
           <nav className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex hover:bg-primary/5 transition-colors">
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex hover:bg-primary/5 transition-colors" render={<Link href="/login" />} nativeButton={false}>
               Log in
             </Button>
-            <Button size="sm" className="group shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <Button size="sm" className="btn-gradient-animate group shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" render={<Link href="/register" />} nativeButton={false}>
               Get Started
               <ArrowRight data-icon="inline-end" className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
@@ -62,11 +63,11 @@ export default function Home() {
 
           {/* CTAs */}
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 [animation-fill-mode:backwards] mt-12 flex w-full flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
-            <Button size="lg" className="h-14 gap-2 rounded-full px-8 text-base shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/25">
+            <Button size="lg" className="btn-gradient-animate h-14 gap-2 rounded-full px-8 text-base shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/25" render={<Link href="/register?role=Student" />} nativeButton={false}>
               <GraduationCap className="size-5" />
               I&apos;m a Student
             </Button>
-            <Button variant="outline" size="lg" className="h-14 gap-2 rounded-full border-border/60 bg-background/50 backdrop-blur-sm px-8 text-base shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-muted/80 hover:shadow-md">
+            <Button variant="outline" size="lg" className="h-14 gap-2 rounded-full border-border/60 bg-background/50 backdrop-blur-sm px-8 text-base shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-muted/80 hover:shadow-md" render={<Link href="/register?role=Company" />} nativeButton={false}>
               <Briefcase className="size-5 text-muted-foreground transition-colors group-hover:text-foreground" />
               I&apos;m Hiring
             </Button>
