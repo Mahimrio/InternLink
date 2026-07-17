@@ -24,7 +24,7 @@ export async function POST() {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      path: "/api/auth",
+      path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
 
@@ -35,7 +35,7 @@ export async function POST() {
     const cookieStore = await cookies();
     cookieStore.delete({
       name: "refreshToken",
-      path: "/api/auth",
+      path: "/",
     });
 
     return NextResponse.json(

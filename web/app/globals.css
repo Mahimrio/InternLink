@@ -217,9 +217,9 @@
   background: linear-gradient(
     110deg,
     oklch(0.40 0.155 175) 25%,   /* Darker teal base (teal-700) */
-    oklch(0.75 0.140 175) 50%,   /* Very bright prominent pop (teal-300) */
+    oklch(0.55 0.130 175) 50%,   /* Subtle teal shimmer (teal-500ish) */
     oklch(0.40 0.155 175) 75%    /* Darker teal base (teal-700) */
   );
   background-size: 250% 250%;
-  animation: gradient-shift 2.5s ease-in-out infinite;
+  animation: gradient-shift 8s ease-in-out infinite;
 }

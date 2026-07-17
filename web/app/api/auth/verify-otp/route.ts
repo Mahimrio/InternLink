@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      path: "/api/auth", // Only send this cookie to our BFF auth routes
+      path: "/", // Visible to middleware for routing
       maxAge: 60 * 60 * 24 * 7, // 7 days (matches backend logic)
     });
 
