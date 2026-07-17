@@ -62,6 +62,9 @@ Standing context for AI agents and contributors working in this monorepo. **This
 - **Server Components by default.** Add `"use client"` only when interactivity (state, effects, event handlers) requires it.
 - **Forms:** `react-hook-form` + `zod` schemas that **mirror the API's request DTOs** field-for-field. Reuse the same zod schema on the client (validation) and conceptually on the server (DTO binding).
 - **Route Handlers** (`app/api/.../route.ts`) exist only to act as the BFF: hold the httpOnly cookie, attach the access token, proxy to the .NET API, and set refreshed cookies. **No business logic in Route Handlers.**
+- **Dashboard Routing:** Use standard nested folders (e.g., `app/student/dashboard/page.tsx`) instead of Route Groups (`app/(student)`) for role-based sections. This avoids path collisions since Next.js route groups are transparent in the URL, which would cause all dashboard pages to attempt to resolve to the same `/dashboard` route.
+- **Defense-in-depth Security:** Every dashboard route MUST be wrapped in the `<RoleGuard allowedRole="...">` client component to prevent UI leaks and provide immediate client-side redirecting on role mismatches, supplementing the edge `middleware.ts`.
+- **Query Parameters:** Any Next.js App Router client component that uses `useSearchParams()` MUST be wrapped in a React `<Suspense>` boundary (usually separated into a sub-component like `<RegisterFormContent>`) to prevent build-time de-optimizations.
 
 ## 5. Database — 15 tables
 

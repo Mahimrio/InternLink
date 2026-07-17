@@ -5,8 +5,9 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   Briefcase,
   Loader2,
@@ -59,11 +60,14 @@ const registerSchema = z.object({
   }
 });
 
-export default function RegisterPage() {
+function RegisterFormContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const defaultRole = searchParams.get("role") === "Company" ? "Company" : "Student";
 
   const { register, handleSubmit, formState: { errors }, setError, watch, control } = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -71,7 +75,7 @@ export default function RegisterPage() {
       email: "",
       password: "",
       confirmPassword: "",
-      role: "Student",
+      role: defaultRole,
       firstName: "",
       lastName: "",
       companyName: "",
@@ -305,5 +309,13 @@ export default function RegisterPage() {
         Secured with end-to-end encryption
       </p>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="size-8 animate-spin text-primary" /></div>}>
+      <RegisterFormContent />
+    </Suspense>
   );
 }

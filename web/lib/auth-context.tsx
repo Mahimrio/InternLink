@@ -11,6 +11,8 @@ export interface DecodedTokenClaims {
   nameid: string; // User ID
   email: string;
   role: Role;
+  unique_name?: string; // ASP.NET ClaimTypes.Name
+  name?: string; // Fallback
   exp: number;
   jti: string;
 }
