@@ -137,3 +137,8 @@ If a later prompt's instructions seem to conflict with anything stated here, **f
 - **Layout:**
   - Use `components/shared/page-container.tsx` (`<PageContainer>`) for standard content (max-w-7xl).
   - Header and footer use a wider edge-to-edge layout (`max-w-[1600px]`).
+
+## 11. Pre-submission checklist
+
+Before final project submission, complete these steps:
+- **Remove `api/appsettings.Development.json` from git tracking** — it currently contains the Supabase DB connection string with credentials. Add it to `.gitignore` and run `git rm --cached api/appsettings.Development.json`. During development it stays tracked so teammates can pull it.
