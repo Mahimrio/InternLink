@@ -11,6 +11,8 @@ export interface DecodedTokenClaims {
   nameid: string; // User ID
   email: string;
   role: Role;
+  unique_name?: string; // ASP.NET ClaimTypes.Name
+  name?: string; // Fallback
   exp: number;
   jti: string;
 }
@@ -77,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setState((prev) => ({ ...prev, isLoading: false }));
           }
         }
-      } catch (err) {
+      } catch {
         if (isMounted) {
           setState((prev) => ({ ...prev, isLoading: false }));
         }
