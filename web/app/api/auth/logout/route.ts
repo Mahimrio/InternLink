@@ -18,7 +18,7 @@ export async function POST() {
       
       cookieStore.delete({
         name: "refreshToken",
-        path: "/api/auth",
+        path: "/",
       });
     }
 

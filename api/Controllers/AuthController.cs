@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
         {
             UserName = dto.Email,
             Email = dto.Email,
-            EmailConfirmed = false,
+            EmailConfirmed = true,
             CreatedAt = DateTimeOffset.UtcNow,
             IsActive = true,
             RoleId = role.Id,
@@ -87,6 +87,7 @@ public class AuthController : ControllerBase
                 UserId = user.Id,
                 FirstName = dto.FirstName!,
                 LastName = dto.LastName!,
+                InstitutionalId = Guid.NewGuid().ToString() // Temporary unique ID
             };
             _db.Students.Add(student);
         }
