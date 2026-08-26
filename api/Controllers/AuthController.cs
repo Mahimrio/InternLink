@@ -69,43 +69,49 @@ public class AuthController : ControllerBase
             RoleId = role.Id,
         };
 
-        using var transaction = await _db.Database.BeginTransactionAsync();
-
-        var createResult = await _userManager.CreateAsync(user, dto.Password);
-        if (!createResult.Succeeded)
+        // A retrying execution strategy is configured, so user-initiated transactions must
+        // be wrapped in ExecuteAsync so the whole unit can be safely retried on transient failure.
+        var strategy = _db.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
-            var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
-            return BadRequest(new { error = errors });
-        }
+            using var transaction = await _db.Database.BeginTransactionAsync();
 
-        await _userManager.AddToRoleAsync(user, dto.Role);
-
-        if (dto.Role == "Student")
-        {
-            var student = new StudentModel
+            var createResult = await _userManager.CreateAsync(user, dto.Password);
+            if (!createResult.Succeeded)
             {
-                UserId = user.Id,
-                FirstName = dto.FirstName!,
-                LastName = dto.LastName!,
-                InstitutionalId = Guid.NewGuid().ToString() // Temporary unique ID
-            };
-            _db.Students.Add(student);
-        }
-        else if (dto.Role == "Company")
-        {
-            var company = new CompanyModel
+                var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
+                return BadRequest(new { error = errors });
+            }
+
+            await _userManager.AddToRoleAsync(user, dto.Role);
+
+            if (dto.Role == "Student")
             {
-                UserId = user.Id,
-                CompanyName = dto.CompanyName!,
-                IndustrySector = string.Empty,
-            };
-            _db.Companies.Add(company);
-        }
+                var student = new StudentModel
+                {
+                    UserId = user.Id,
+                    FirstName = dto.FirstName!,
+                    LastName = dto.LastName!,
+                    InstitutionalId = Guid.NewGuid().ToString() // Temporary unique ID
+                };
+                _db.Students.Add(student);
+            }
+            else if (dto.Role == "Company")
+            {
+                var company = new CompanyModel
+                {
+                    UserId = user.Id,
+                    CompanyName = dto.CompanyName!,
+                    IndustrySector = string.Empty,
+                };
+                _db.Companies.Add(company);
+            }
 
-        await _db.SaveChangesAsync();
-        await transaction.CommitAsync();
+            await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
 
-        return Created(string.Empty, new { userId = user.Id.ToString() });
+            return Created(string.Empty, new { userId = user.Id.ToString() });
+        });
     }
 
     [HttpPost("login")]
@@ -118,6 +124,12 @@ public class AuthController : ControllerBase
         if (user is null || !await _userManager.CheckPasswordAsync(user, dto.Password))
         {
             return Unauthorized(new { error = "Invalid email or password." });
+        }
+
+        // Suspended accounts are stopped before the OTP/token-issuance step.
+        if (!user.IsActive)
+        {
+            return StatusCode(403, new { error = "This account has been suspended" });
         }
 
         if (await _userManager.IsLockedOutAsync(user))
@@ -306,7 +318,8 @@ public class AuthController : ControllerBase
 
     private async Task<AuthResponseDto> IssueTokensAsync(User user, Guid? replacedTokenId = null)
     {
-        var accessToken = GenerateAccessToken(user);
+        var role = await ResolveRoleAsync(user);
+        var accessToken = GenerateAccessToken(user, role);
         var (refreshTokenValue, refreshTokenHash) = GenerateRefreshToken();
 
         var refreshToken = new RefreshToken
@@ -329,11 +342,23 @@ public class AuthController : ControllerBase
             AccessToken = accessToken,
             RefreshToken = refreshTokenValue,
             ExpiresInSeconds = 900,
-            Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? string.Empty,
+            Role = role,
         };
     }
 
-    private string GenerateAccessToken(User user)
+    // Prefer the Identity user-role join; fall back to the custom RoleId FK, which is always
+    // set at registration/seed even when the join row is missing (as with the seeded admin).
+    private async Task<string> ResolveRoleAsync(User user)
+    {
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+        if (!string.IsNullOrEmpty(role))
+            return role;
+
+        var fallback = await _roleManager.FindByIdAsync(user.RoleId.ToString());
+        return fallback?.Name ?? string.Empty;
+    }
+
+    private string GenerateAccessToken(User user, string role)
     {
         var secret = _configuration["Jwt:Secret"]
             ?? throw new InvalidOperationException("JWT secret is not configured.");
@@ -345,7 +370,7 @@ public class AuthController : ControllerBase
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, _userManager.GetRolesAsync(user).Result.FirstOrDefault() ?? string.Empty),
+            new(ClaimTypes.Role, role),
         };
 
         var token = new JwtSecurityToken(
