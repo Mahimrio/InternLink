@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiClient } from "@/lib/api-client";
@@ -14,7 +14,6 @@ import {
   Search,
   ArrowRight,
   Briefcase,
-  Layers,
   Download,
   Clock,
   ChevronRight,
@@ -29,8 +28,7 @@ import {
   Target,
   CheckCircle2,
   Circle,
-  CalendarDays,
-  GraduationCap
+  ShieldCheck
 } from "lucide-react";
 
 /* ────────────────────────────── Types ────────────────────────────── */
@@ -43,6 +41,7 @@ interface StudentProfile {
   department: string;
   biography: string | null;
   interests: string | null;
+  verifiedSkills?: string[];
 }
 
 interface ResumeItem {
@@ -67,21 +66,10 @@ function StatusDot({ color = "bg-teal-500" }: { color?: string }) {
   );
 }
 
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
-}
-
-function getInitials(first?: string, last?: string): string {
-  return `${(first || "S")[0]}${(last || "")[0] || ""}`.toUpperCase();
-}
-
 /* ────────────────────────── Main Component ───────────────────────── */
 
 export default function StudentDashboardPage() {
-  const { user, accessToken, isLoading: isAuthLoading } = useAuth();
+  const { accessToken, isLoading: isAuthLoading } = useAuth();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,14 +96,13 @@ export default function StudentDashboardPage() {
         if (isMounted) setIsLoading(false);
       }
     }
+
     load();
 
     return () => {
       isMounted = false;
     };
   }, [accessToken, isAuthLoading]);
-
-  const greeting = useMemo(() => getGreeting(), []);
 
   if (isAuthLoading || isLoading) {
     return (
@@ -133,12 +120,6 @@ export default function StudentDashboardPage() {
       </PageContainer>
     );
   }
-
-  /* ── Derived ── */
-  const firstName = profile?.firstName || user?.name?.split(" ")[0] || "Student";
-  const lastName = profile?.lastName || "";
-  const fullName = `${firstName} ${lastName}`.trim();
-  const initials = getInitials(firstName, lastName);
 
   const skills: string[] = [];
   resumes.forEach(r => {
@@ -160,8 +141,6 @@ export default function StudentDashboardPage() {
   ];
   const pct = steps.filter(s => s.done).length * 25;
 
-  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Ambient orbs — subtle depth, not visible color */}
@@ -169,74 +148,15 @@ export default function StudentDashboardPage() {
       <AmbientOrb className="w-[450px] h-[450px] bg-slate-300/10 dark:bg-slate-500/5 blur-[140px] top-[40%] -left-60 animate-float-slower" />
       <AmbientOrb className="w-[350px] h-[350px] bg-teal-300/6 dark:bg-teal-400/4 blur-[120px] bottom-10 right-[20%] animate-float-slow" />
 
-      <PageContainer className="relative z-10 py-10 space-y-7">
-
+      <PageContainer className="relative z-10 py-8 space-y-8">
         {/* ════════════════════════════════════════════════════════
-            1. WELCOME HERO — Avatar + Time Greeting + Date
-            ════════════════════════════════════════════════════════ */}
-        <div className="animate-fade-up stagger-1 relative glass-hero rounded-2xl overflow-hidden">
-          {/* Animated shimmer accent */}
-          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-teal-600 via-teal-400 to-amber-400 overflow-hidden">
-            <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-white/70 to-transparent animate-shimmer-line" />
-          </div>
-          {/* Subtle corner depth */}
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-slate-200/30 dark:bg-slate-700/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
-            {/* Avatar */}
-            <div title={fullName} className="size-16 sm:size-[72px] rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center shrink-0 shadow-xl shadow-teal-600/30 text-xl sm:text-2xl font-heading font-bold tracking-tight select-none ring-4 ring-white/40 dark:ring-slate-800/40">
-              {initials}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-teal-100/80 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300 border border-teal-200/50 dark:border-teal-700/40">
-                  <GraduationCap className="size-3" />
-                  {profile?.department || "Student"}
-                </span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                  <CalendarDays className="size-3" />
-                  {today}
-                </span>
-              </div>
-
-              <h1 className="font-heading text-2xl sm:text-[1.85rem] font-bold tracking-tight text-slate-900 dark:text-white leading-tight truncate">
-                {greeting},{" "}
-                <span className="bg-gradient-to-r from-teal-700 via-teal-600 to-teal-500 dark:from-teal-300 dark:via-teal-200 dark:to-teal-400 bg-clip-text text-transparent">
-                  {firstName}
-                </span>
-              </h1>
-
-              <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1 max-w-md leading-relaxed">
-                Track applications, build ATS resumes, and discover opportunities.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2.5 shrink-0 sm:self-start sm:pt-1">
-              <Link href="/student/profile">
-                <Button variant="outline" size="sm" className="h-9 text-xs font-medium border-slate-300/70 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]">
-                  <User className="size-3.5 mr-1.5 text-slate-500" />
-                  Profile
-                </Button>
-              </Link>
-              <Link href="/student/resumes/builder">
-                <Button size="sm" className="h-9 text-xs font-semibold btn-gradient-animate text-white shadow-lg shadow-teal-600/25 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] hover:shadow-xl hover:shadow-teal-600/35">
-                  <Plus className="size-3.5 mr-1.5" />
-                  New Resume
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* ════════════════════════════════════════════════════════
-            2. METRIC CARDS — Larger numbers, trend indicators
+            1. METRIC CARDS — Clean uniform borders, larger numbers
             ════════════════════════════════════════════════════════ */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Applications", val: "0", sub: "Active submissions", icon: Briefcase, accent: "teal" as const, trend: null },
             { label: "ATS Resumes", val: String(resumes.length), sub: "Compiled documents", icon: FileText, accent: "teal" as const, trend: resumes.length > 0 ? `+${resumes.length} this month` : null },
-            { label: "Skills Added", val: String(skills.length), sub: "Linked to profile", icon: Layers, accent: "teal" as const, trend: skills.length >= 3 ? "Strong profile" : "Add more skills" },
+            { label: "Verified Skills", val: String(profile?.verifiedSkills?.length || 0), sub: "Passed assessments", icon: ShieldCheck, accent: "teal" as const, trend: (profile?.verifiedSkills?.length || 0) > 0 ? "Recruiter endorsed" : "Take assessments" },
             { label: "Academic CGPA", val: profile?.cgpa ? Number(profile.cgpa).toFixed(2) : "0.00", sub: "/ 4.00 scale", icon: Award, accent: "amber" as const, trend: profile?.cgpa && profile.cgpa >= 3.5 ? "Dean's list eligible" : null },
           ].map((m, i) => {
             const Icon = m.icon;

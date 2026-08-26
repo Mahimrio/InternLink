@@ -7,5 +7,6 @@ public record ProfileDto(
     string InstitutionalId,
     string Department,
     string? Biography,
-    string? Interests
+    string? Interests,
+    IReadOnlyList<string> VerifiedSkills
 );

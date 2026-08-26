@@ -5,6 +5,7 @@ using DotNetEnv;
 using InternLinkApi.Models;
 using InternLinkApi.Repositories.Implementation;
 using InternLinkApi.Repositories.Interface;
+using InternLinkApi.Services.AssessmentService;
 using InternLinkApi.Services.EmailSender;
 using InternLinkApi.Services.JobService;
 using InternLinkApi.Services.ProfileService;
@@ -104,8 +105,12 @@ builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
+builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 
 // ── Services ─────────────────────────────────────────────────────────
+builder.Services.AddSingleton<IAssessmentQuestionBankService, AssessmentQuestionBankService>();
+builder.Services.AddSingleton<IAssessmentSessionService, AssessmentSessionService>();
+builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
