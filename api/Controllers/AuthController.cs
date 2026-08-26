@@ -132,6 +132,8 @@ public class AuthController : ControllerBase
 
         var (otpToken, plainCode) = await GenerateAndStoreOtpAsync(user);
 
+        Console.WriteLine($"[DEBUG OTP] Verification code for {user.Email}: {plainCode}");
+
         await _emailSender.SendAsync(
             user.Email!,
             "Your InternLink verification code",
@@ -141,7 +143,7 @@ public class AuthController : ControllerBase
             <p>This code expires in 5 minutes.</p>
             """);
 
-        return Accepted(new { otpRequired = true, otpToken });
+        return Accepted(new { otpRequired = true, otpToken, debugOtp = plainCode });
     }
 
     [HttpPost("verify-otp")]
@@ -217,7 +219,9 @@ public class AuthController : ControllerBase
             <p>This code expires in 5 minutes.</p>
             """);
 
-        return Accepted(new { otpRequired = true, otpToken = newOtpToken });
+        Console.WriteLine($"[DEBUG OTP] Resent verification code for {user.Email}: {plainCode}");
+
+        return Accepted(new { otpRequired = true, otpToken = newOtpToken, debugOtp = plainCode });
     }
 
     [HttpPost("refresh")]
