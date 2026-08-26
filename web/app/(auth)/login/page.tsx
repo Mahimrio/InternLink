@@ -32,6 +32,8 @@ const otpSchema = z.object({
 export default function LoginPage() {
   const [step, setStep] = useState<"login" | "otp">("login");
   const [otpToken, setOtpToken] = useState<string>("");
+  const [debugOtp, setDebugOtp] = useState<string | null>(null);
+  const [otpCodeValue, setOtpCodeValue] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -70,6 +72,11 @@ export default function LoginPage() {
 
       if (data.otpRequired && data.otpToken) {
         setOtpToken(data.otpToken);
+        if (data.debugOtp) {
+          setDebugOtp(data.debugOtp);
+          setValue("code", data.debugOtp);
+          setOtpCodeValue(data.debugOtp);
+        }
         setStep("otp");
         toast.info("Please check your email for the verification code.");
       }
@@ -202,7 +209,34 @@ export default function LoginPage() {
                   <Mail className="size-8 text-teal-600 animate-bounce [animation-duration:2s]" />
                 </div>
                 <Label className="text-sm font-medium">One-Time Password</Label>
-                <InputOTP maxLength={6} onChange={(val) => setValue("code", val)}>
+
+                {debugOtp && (
+                  <div className="w-full rounded-lg bg-teal-500/10 border border-teal-500/30 p-3 text-center text-xs animate-in fade-in zoom-in-95 duration-300">
+                    <p className="font-semibold text-teal-800 dark:text-teal-300">🛠️ Debug Verification Code</p>
+                    <p className="text-xl font-mono font-bold tracking-widest text-teal-700 dark:text-teal-300 my-1">
+                      {debugOtp}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue("code", debugOtp);
+                        setOtpCodeValue(debugOtp);
+                      }}
+                      className="text-xs text-teal-700 dark:text-teal-300 underline font-medium hover:opacity-80 transition-opacity"
+                    >
+                      Auto-filled (Click if not applied)
+                    </button>
+                  </div>
+                )}
+
+                <InputOTP
+                  maxLength={6}
+                  value={otpCodeValue}
+                  onChange={(val) => {
+                    setOtpCodeValue(val);
+                    setValue("code", val);
+                  }}
+                >
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
                     <InputOTPSlot index={1} />

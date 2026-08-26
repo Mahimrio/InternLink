@@ -142,3 +142,34 @@ If a later prompt's instructions seem to conflict with anything stated here, **f
 
 Before final project submission, complete these steps:
 - **Remove `api/appsettings.Development.json` from git tracking** — it currently contains the Supabase DB connection string with credentials. Add it to `.gitignore` and run `git rm --cached api/appsettings.Development.json`. During development it stays tracked so teammates can pull it.
+
+## 12. UI/UX Pro Max Skill & Contributor Setup
+
+The repository includes the **`ui_ux_pro_max`** skill in [`.agents/skills/ui_ux_pro_max/SKILL.md`](.agents/skills/ui_ux_pro_max/SKILL.md) to enforce enterprise-grade design standards across all user interfaces.
+
+- **Automatic Workspace Discovery:** All AI agents working in this repository automatically discover and apply this skill from `.agents/skills/ui_ux_pro_max/SKILL.md`.
+- **Global Installation (Optional for all workspaces):**
+  ```bash
+  mkdir -p ~/.gemini/config/skills/ui_ux_pro_max
+  cp -r .agents/skills/ui_ux_pro_max/* ~/.gemini/config/skills/ui_ux_pro_max/
+  ```
+- **Guidelines Enforced:**
+  - Typography: Space Grotesk (`font-heading`) for headings & Inter (`font-sans`) for body.
+  - Colors: Deep Teal primary (`oklch(0.45 0.12 195)`), Warm Amber accent (`oklch(0.75 0.18 65)`).
+  - Micro-interactions: `.btn-gradient-animate` for major CTAs, staggered entry animations (`animate-in fade-in`), subtle hover elevations.
+  - Accessibility: WCAG AA contrast compliance and semantic HTML on all pages.
+
+## 13. Antigravity Awesome Skills Bundle
+
+To enhance your AI assistant with the complete catalog of curated development, refactoring, and domain skills:
+
+- **Install globally for Antigravity:**
+  ```bash
+  npx antigravity-awesome-skills --antigravity
+  ```
+- **Install in local project workspace (`.agents/skills`):**
+  ```bash
+  npx antigravity-awesome-skills --path .agents/skills
+  ```
+
+

@@ -7,15 +7,22 @@ using InternLinkApi.Repositories.Implementation;
 using InternLinkApi.Repositories.Interface;
 using InternLinkApi.Services.EmailSender;
 using InternLinkApi.Services.JobService;
+using InternLinkApi.Services.ProfileService;
+using InternLinkApi.Services.ResumeService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using QuestPDF.Infrastructure;
+
+// Configure QuestPDF Community license for academic and open source use
+QuestPDF.Settings.License = LicenseType.Community;
 
 Env.Load(Path.Combine(Directory.GetCurrentDirectory(), "..", ".env"));
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -47,7 +54,9 @@ builder.Services.AddIdentity<User, Role>(options =>
     .AddDefaultTokenProviders();
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]
-    ?? throw new InvalidOperationException("JWT secret is not configured. Set Jwt:Secret or the Jwt__Secret environment variable.");
+    ?? builder.Configuration["JWT_SECRET"]
+    ?? Environment.GetEnvironmentVariable("JWT_SECRET")
+    ?? throw new InvalidOperationException("JWT secret is not configured. Set Jwt:Secret or the JWT_SECRET environment variable.");
 var jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
 builder.Services.AddAuthentication(options =>
@@ -93,9 +102,14 @@ else
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
 
 // ── Services ─────────────────────────────────────────────────────────
 builder.Services.AddScoped<IJobService, JobService>();
+builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IResumeService, ResumeService>();
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]
@@ -149,9 +163,8 @@ if (app.Environment.IsDevelopment())
     catch (Exception ex)
     {
         Console.Error.WriteLine(
-            $"ERROR: Database migration or seeding failed. "
+            $"WARNING: Database migration or seeding failed on startup. "
             + $"{ex.GetType().Name}: {ex.Message}");
-        throw;
     }
 }
 
