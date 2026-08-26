@@ -27,4 +27,8 @@ public interface IJobRepository : IRepository<Job>
 
     // Read-only load (with skills) used to build the response after a mutation.
     Task<Job?> GetByIdWithSkillsAsync(Guid jobId, CancellationToken ct = default);
+
+    // Admin moderation queue: all jobs filtered by approval state, with company included.
+    Task<(IReadOnlyList<Job> Items, int TotalCount)> GetPagedByApprovalAsync(
+        bool approved, int page, int pageSize, CancellationToken ct = default);
 }
