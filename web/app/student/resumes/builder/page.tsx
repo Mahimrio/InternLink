@@ -25,8 +25,7 @@ import {
   FileCheck,
   Plus,
   Trash2,
-  Download,
-  AlertCircle
+  Download
 } from "lucide-react";
 
 const STEPS = [
@@ -134,14 +133,17 @@ function ResumeBuilderContent() {
 
   // Initialize or load draft
   useEffect(() => {
-    if (!accessToken && !isAuthLoading) {
-      setIsLoading(false);
+    if (!accessToken) {
+      if (!isAuthLoading) {
+        Promise.resolve().then(() => setIsLoading(false));
+      }
       return;
     }
 
+    let isMounted = true;
+
     async function initWizard() {
       try {
-        setIsLoading(true);
         const queryId = searchParams.get("resumeId");
 
         if (queryId) {
@@ -152,15 +154,15 @@ function ResumeBuilderContent() {
             { token: accessToken }
           );
           const target = resumes.find((r) => r.id === queryId);
-          if (target && target.dynamicJsonData) {
+          if (target && target.dynamicJsonData && isMounted) {
             try {
               const parsed: ResumeData = JSON.parse(target.dynamicJsonData);
               if (parsed["personal-info"]) setPersonalInfo((prev) => ({ ...prev, ...parsed["personal-info"] }));
               if (parsed.education) setEducation((prev) => ({ ...prev, ...parsed.education }));
               if (parsed.experience) setExperience((prev) => ({ ...prev, ...parsed.experience }));
-              if (parsed.skills && Array.isArray(parsed.skills)) setSkills(parsed.skills);
+              if (parsed.skills) setSkills(parsed.skills);
             } catch {
-              // Ignore json parse error
+              // Parse error
             }
           }
         } else {
@@ -208,6 +210,10 @@ function ResumeBuilderContent() {
     if (accessToken) {
       initWizard();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [accessToken, isAuthLoading, searchParams]);
 
   // Progressive save helper for single step
@@ -259,7 +265,7 @@ function ResumeBuilderContent() {
 
     try {
       setIsFinalizing(true);
-      const res = await apiClient<{ documentPath: string; downloadUrl: string }>(
+      await apiClient<{ documentPath: string; downloadUrl: string }>(
         `/api/student/resumes/${resumeId}/finalize`,
         {
           method: "POST",
@@ -371,7 +377,7 @@ function ResumeBuilderContent() {
                       : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                   }`}
                 >
-                  {isCompleted ? <CheckCircle2 className="size-3.5" /> : idx + 1}
+                  {isCompleted ? <CheckCircle2 className="size-3.5" /> : <Icon className="size-3.5" />}
                 </div>
                 <span>{step.title}</span>
               </button>

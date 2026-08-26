@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiClient } from "@/lib/api-client";
 import { PageContainer } from "@/components/shared/page-container";
 import { ApplicationFunnel } from "@/components/student/application-funnel";
-import { getStatusConfig, ApplicationStatus } from "@/lib/application-status";
+import { getStatusConfig } from "@/lib/application-status";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -15,10 +15,7 @@ import {
   Calendar,
   Search,
   ArrowRight,
-  CheckCircle2,
-  FileText,
   Clock,
-  Filter,
   ExternalLink,
   Award,
   Layers
@@ -45,28 +42,36 @@ export default function StudentApplicationsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!accessToken && !isAuthLoading) {
-      setIsLoading(false);
+    if (!accessToken) {
+      if (!isAuthLoading) {
+        // Use microtask or timeout to avoid synchronous setState inside render-effect cycle
+        Promise.resolve().then(() => setIsLoading(false));
+      }
       return;
     }
 
+    let isMounted = true;
     async function loadApplications() {
       try {
-        setIsLoading(true);
         const data = await apiClient<ApplicationItem[]>(`/api/student/applications`, {
           token: accessToken,
         });
-        setApplications(data || []);
+        if (isMounted) {
+          setApplications(data || []);
+        }
       } catch {
         // Graceful error handling
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
 
-    if (accessToken) {
-      loadApplications();
-    }
+    loadApplications();
+    return () => {
+      isMounted = false;
+    };
   }, [accessToken, isAuthLoading]);
 
   const filtered = activeTab === "All"

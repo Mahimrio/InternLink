@@ -3,10 +3,9 @@
 import React from "react";
 import {
   ApplicationStatus,
-  APPLICATION_STATUS_CONFIG,
   getStatusConfig,
 } from "@/lib/application-status";
-import { CheckCircle2, UserCheck, Calendar, Award, XCircle, Clock } from "lucide-react";
+import { CheckCircle2, UserCheck, Calendar, Award, XCircle } from "lucide-react";
 
 interface ApplicationFunnelProps {
   status: string;
@@ -52,7 +51,6 @@ export function ApplicationFunnel({ status, className = "" }: ApplicationFunnelP
         {STEPS.map((step, idx) => {
           const isPassed = idx < currentStep;
           const isCurrent = idx === currentStep;
-          const isFuture = idx > currentStep;
 
           let StepIcon = step.icon;
           let nodeLabel = step.label;

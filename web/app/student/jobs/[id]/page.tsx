@@ -16,10 +16,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   FileText,
-  Sparkles,
   Layers,
-  ChevronRight,
-  ExternalLink,
   ShieldCheck,
   Award,
   Plus
@@ -113,18 +110,23 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [hasAppliedLocally, setHasAppliedLocally] = useState(false);
 
   useEffect(() => {
-    if (!accessToken && !isAuthLoading) {
-      setIsLoading(false);
+    if (!accessToken) {
+      if (!isAuthLoading) {
+        Promise.resolve().then(() => setIsLoading(false));
+      }
       return;
     }
 
+    let isMounted = true;
+
     async function loadData() {
       try {
-        setIsLoading(true);
         const [jobRes, resumesRes] = await Promise.allSettled([
           apiClient<JobDetailDto>(`/api/student/jobs/${jobId}`, { token: accessToken }),
           apiClient<ResumeDto[]>(`/api/student/resumes`, { token: accessToken }),
         ]);
+
+        if (!isMounted) return;
 
         if (jobRes.status === "fulfilled") {
           setJob(jobRes.value);
@@ -145,15 +147,17 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           }
         }
       } catch {
-        toast.error("Failed to load job details.");
+        if (isMounted) toast.error("Failed to load job details.");
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     }
 
-    if (accessToken) {
-      loadData();
-    }
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [accessToken, isAuthLoading, jobId, router]);
 
   const handleApply = async () => {

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/navigation";
 import NextLink from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiClient } from "@/lib/api-client";
@@ -16,7 +15,6 @@ import {
   Download,
   Plus,
   Calendar,
-  ExternalLink,
   Edit3,
   FileCheck2,
   Sparkles,
@@ -35,27 +33,34 @@ export default function StudentResumesPage() {
   const [resumes, setResumes] = useState<ResumeDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchResumes = async () => {
-    try {
-      setIsLoading(true);
-      const data = await apiClient<ResumeDto[]>("/api/student/resumes", {
-        token: accessToken,
-      });
-      setResumes(data || []);
-    } catch (err: unknown) {
-      const error = err as { message?: string };
-      toast.error(error.message || "Failed to load resumes");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (accessToken) {
-      fetchResumes();
-    } else if (!isAuthLoading) {
-      setIsLoading(false);
+    if (!accessToken) {
+      if (!isAuthLoading) {
+        Promise.resolve().then(() => setIsLoading(false));
+      }
+      return;
     }
+
+    let isMounted = true;
+    async function load() {
+      try {
+        const data = await apiClient<ResumeDto[]>("/api/student/resumes", {
+          token: accessToken,
+        });
+        if (isMounted) setResumes(data || []);
+      } catch (err: unknown) {
+        const error = err as { message?: string };
+        if (isMounted) toast.error(error.message || "Failed to load resumes");
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
   }, [accessToken, isAuthLoading]);
 
   const formatDate = (dateStr: string) => {
@@ -135,10 +140,10 @@ export default function StudentResumesPage() {
             <FileText className="size-8" />
           </div>
           <h2 className="font-heading text-xl font-bold text-slate-900 dark:text-white mb-2">
-            You haven't created a resume yet
+            You haven&apos;t created a resume yet
           </h2>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-            Build your first tailored resume using our step-by-step wizard. We'll automatically format it, link your skills, and generate an ATS-compatible PDF.
+            Build your first tailored resume using our step-by-step wizard. We&apos;ll automatically format it, link your skills, and generate an ATS-compatible PDF.
           </p>
           <NextLink href="/student/resumes/builder">
             <Button className="bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white px-6">
@@ -159,49 +164,45 @@ export default function StudentResumesPage() {
                 }
               }
             } catch {
-              // Ignore
+              // Ignore json parse error
             }
 
             return (
               <Card
                 key={resume.id}
-                className="border-border/70 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+                className="group relative overflow-hidden border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               >
+                {/* Top decorative line */}
+                <div className="h-1.5 w-full bg-gradient-to-r from-teal-500 to-teal-700" />
+
                 <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="size-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 flex items-center justify-center">
-                      <FileCheck2 className="size-5" />
-                    </div>
-                    <Badge variant="outline" className="text-[11px] font-mono border-teal-200 text-teal-800 dark:border-teal-800 dark:text-teal-300">
-                      Draft #{idx + 1}
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="font-heading text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <FileCheck2 className="size-4 text-teal-600 dark:text-teal-400" />
+                      Resume #{idx + 1}
+                    </CardTitle>
+                    <Badge variant="secondary" className="bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 text-[10px] font-semibold border-teal-200/50">
+                      ATS Verified
                     </Badge>
                   </div>
-                  <CardTitle className="font-heading text-lg mt-3">
-                    ATS Resume
-                  </CardTitle>
-                  <CardDescription className="flex items-center gap-1.5 text-xs">
-                    <Calendar className="size-3.5 text-muted-foreground" />
-                    Modified {formatDate(resume.lastModified)}
+                  <CardDescription className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 pt-1">
+                    <Calendar className="size-3 text-slate-400" />
+                    Updated {formatDate(resume.lastModified)}
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className="pb-4 space-y-2 text-xs">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Layers className="size-3 text-teal-600" />
-                      Skills Linked:
-                    </span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {skillCount > 0 ? `${skillCount} skills` : "Pending skills"}
-                    </span>
+                <CardContent className="pb-4 space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                    <Layers className="size-3.5 text-teal-600" />
+                    <span>{skillCount} Skills included</span>
                   </div>
                 </CardContent>
 
-                <CardFooter className="pt-2 border-t flex items-center gap-2">
+                <CardFooter className="pt-0 flex items-center gap-2">
                   <NextLink href={`/student/resumes/builder?resumeId=${resume.id}`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Edit3 className="size-3.5 mr-1.5" />
-                      Edit
+                    <Button variant="outline" size="sm" className="w-full text-xs font-semibold text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">
+                      <Edit3 className="size-3.5 mr-1.5 text-teal-600" />
+                      Edit Draft
                     </Button>
                   </NextLink>
 
@@ -212,20 +213,15 @@ export default function StudentResumesPage() {
                       rel="noopener noreferrer"
                       className="flex-1"
                     >
-                      <Button
-                        size="sm"
-                        className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white"
-                      >
+                      <Button size="sm" className="w-full text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white shadow-sm">
                         <Download className="size-3.5 mr-1.5" />
                         PDF
                       </Button>
                     </a>
                   ) : (
-                    <NextLink href={`/student/resumes/builder?resumeId=${resume.id}`} className="flex-1">
-                      <Button size="sm" variant="secondary" className="w-full">
-                        Finalize
-                      </Button>
-                    </NextLink>
+                    <Button disabled size="sm" variant="ghost" className="flex-1 text-xs text-slate-400">
+                      Draft Only
+                    </Button>
                   )}
                 </CardFooter>
               </Card>
