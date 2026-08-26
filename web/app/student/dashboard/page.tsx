@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { apiClient } from "@/lib/api-client";
@@ -12,7 +12,6 @@ import {
   FileText,
   Sparkles,
   Search,
-  BookOpen,
   ArrowRight,
   Briefcase,
   Layers,
@@ -24,9 +23,18 @@ import {
   MapPin,
   ArrowUpRight,
   Plus,
+  FileCheck,
+  BookOpen,
+  TrendingUp,
   Zap,
-  Star
+  Target,
+  CheckCircle2,
+  Circle,
+  CalendarDays,
+  GraduationCap
 } from "lucide-react";
+
+/* ────────────────────────────── Types ────────────────────────────── */
 
 interface StudentProfile {
   firstName: string;
@@ -45,6 +53,34 @@ interface ResumeItem {
   dynamicJsonData: string | null;
 }
 
+/* ────────────────────────── Helpers ───────────────────────────────── */
+
+function AmbientOrb({ className }: { className: string }) {
+  return <div aria-hidden className={`absolute rounded-full pointer-events-none select-none ${className}`} />;
+}
+
+function StatusDot({ color = "bg-teal-500" }: { color?: string }) {
+  return (
+    <span className="relative flex size-2 shrink-0">
+      <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${color} opacity-40`} />
+      <span className={`relative inline-flex size-2 rounded-full ${color}`} />
+    </span>
+  );
+}
+
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function getInitials(first?: string, last?: string): string {
+  return `${(first || "S")[0]}${(last || "")[0] || ""}`.toUpperCase();
+}
+
+/* ────────────────────────── Main Component ───────────────────────── */
+
 export default function StudentDashboardPage() {
   const { user, accessToken, isLoading: isAuthLoading } = useAuth();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
@@ -52,485 +88,420 @@ export default function StudentDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!accessToken && !isAuthLoading) {
-      setIsLoading(false);
-      return;
-    }
-
-    async function loadDashboardData() {
+    if (!accessToken && !isAuthLoading) { setIsLoading(false); return; }
+    async function load() {
       try {
         setIsLoading(true);
-        const [profileData, resumesData] = await Promise.allSettled([
+        const [p, r] = await Promise.allSettled([
           apiClient<StudentProfile>("/api/student/profile", { token: accessToken }),
           apiClient<ResumeItem[]>("/api/student/resumes", { token: accessToken }),
         ]);
-
-        if (profileData.status === "fulfilled") {
-          setProfile(profileData.value);
-        }
-        if (resumesData.status === "fulfilled") {
-          setResumes(resumesData.value || []);
-        }
-      } catch {
-        // Graceful fallback
-      } finally {
-        setIsLoading(false);
-      }
+        if (p.status === "fulfilled") setProfile(p.value);
+        if (r.status === "fulfilled") setResumes(r.value || []);
+      } catch { /* graceful */ } finally { setIsLoading(false); }
     }
-
-    if (accessToken) {
-      loadDashboardData();
-    }
+    if (accessToken) load();
   }, [accessToken, isAuthLoading]);
+
+  const greeting = useMemo(() => getGreeting(), []);
 
   if (isAuthLoading || isLoading) {
     return (
-      <PageContainer className="py-8">
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-96" />
-            </div>
-            <Skeleton className="h-10 w-36" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-28 w-full rounded-xl" />
-            ))}
+      <PageContainer className="py-10">
+        <div className="space-y-8">
+          <Skeleton className="h-40 w-full rounded-2xl" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-[120px] rounded-2xl" />)}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Skeleton className="h-80 lg:col-span-2 rounded-xl" />
-            <Skeleton className="h-80 rounded-xl" />
+            <Skeleton className="h-[400px] lg:col-span-2 rounded-2xl" />
+            <Skeleton className="h-[400px] rounded-2xl" />
           </div>
         </div>
       </PageContainer>
     );
   }
 
-  const displayName = profile
-    ? `${profile.firstName} ${profile.lastName}`.trim()
-    : user?.name || user?.unique_name || "Student";
+  /* ── Derived ── */
+  const firstName = profile?.firstName || user?.name?.split(" ")[0] || "Student";
+  const lastName = profile?.lastName || "";
+  const fullName = `${firstName} ${lastName}`.trim();
+  const initials = getInitials(firstName, lastName);
 
-  const totalSkillsCount = resumes.reduce((acc, r) => {
+  const skills: string[] = [];
+  resumes.forEach(r => {
     try {
       if (r.dynamicJsonData) {
-        const parsed = JSON.parse(r.dynamicJsonData);
-        return Math.max(acc, parsed.skills?.length || 0);
+        const p = JSON.parse(r.dynamicJsonData);
+        if (Array.isArray(p.skills)) p.skills.forEach((s: { name?: string }) => {
+          if (s.name && !skills.includes(s.name)) skills.push(s.name);
+        });
       }
-    } catch {
-      // Ignore
-    }
-    return acc;
-  }, 0);
+    } catch { /* skip */ }
+  });
+
+  const steps = [
+    { label: "Profile info", done: !!profile?.firstName },
+    { label: "Academic CGPA", done: !!profile?.cgpa },
+    { label: "First resume", done: resumes.length > 0 },
+    { label: "3+ skills", done: skills.length >= 3 },
+  ];
+  const pct = steps.filter(s => s.done).length * 25;
+
+  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
   return (
-    <PageContainer className="py-8 space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500 relative">
-      {/* Radiant Glorious Background Ambient Lighting */}
-      <div className="fixed top-8 right-1/4 -z-10 h-[450px] w-[450px] rounded-full bg-gradient-to-tr from-teal-400/25 via-emerald-400/20 to-teal-500/15 blur-[120px] pointer-events-none animate-pulse duration-1000" />
-      <div className="fixed bottom-10 left-10 -z-10 h-[450px] w-[450px] rounded-full bg-gradient-to-tr from-amber-400/20 via-orange-400/15 to-rose-400/10 blur-[130px] pointer-events-none animate-pulse duration-1000" />
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Ambient orbs — subtle depth, not visible color */}
+      <AmbientOrb className="w-[600px] h-[600px] bg-teal-400/8 dark:bg-teal-500/6 blur-[160px] -top-52 -right-48 animate-float-slow" />
+      <AmbientOrb className="w-[450px] h-[450px] bg-slate-300/10 dark:bg-slate-500/5 blur-[140px] top-[40%] -left-60 animate-float-slower" />
+      <AmbientOrb className="w-[350px] h-[350px] bg-teal-300/6 dark:bg-teal-400/4 blur-[120px] bottom-10 right-[20%] animate-float-slow" />
 
-      {/* 1. Header Card - Glorious Glassmorphism with Radiant Top Shimmer */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-r from-white/90 via-white/80 to-teal-50/40 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-teal-950/20 backdrop-blur-xl shadow-lg shadow-teal-950/5 p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/10 hover:border-teal-400/50">
-        {/* Radiant Multi-Color Top Accent */}
-        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-teal-500 via-emerald-400 to-amber-400" />
+      <PageContainer className="relative z-10 py-10 space-y-7">
 
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 dark:from-emerald-950/60 dark:to-teal-950/60 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60 shadow-2xs">
-              <Sparkles className="size-3 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-              Active Session
-            </span>
+        {/* ════════════════════════════════════════════════════════
+            1. WELCOME HERO — Avatar + Time Greeting + Date
+            ════════════════════════════════════════════════════════ */}
+        <div className="animate-fade-up stagger-1 relative glass-hero rounded-2xl overflow-hidden">
+          {/* Animated shimmer accent */}
+          <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-teal-600 via-teal-400 to-amber-400 overflow-hidden">
+            <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-white/70 to-transparent animate-shimmer-line" />
           </div>
+          {/* Subtle corner depth */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-slate-200/30 dark:bg-slate-700/10 rounded-full blur-3xl pointer-events-none" />
 
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Welcome back,{" "}
-            <span className="bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-600 dark:from-teal-300 dark:via-teal-200 dark:to-emerald-300 bg-clip-text text-transparent drop-shadow-xs">
-              {displayName}
-            </span>
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {profile?.department ? `${profile.department} • ` : ""}
-            Manage your resumes, track internship applications, and view match scores.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 shrink-0">
-          <Link href="/student/profile">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 font-medium text-xs border-teal-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md hover:bg-teal-50/60 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-teal-700 transition-all hover:scale-105 active:scale-95 shadow-xs"
-            >
-              <User className="size-3.5 mr-1.5 text-teal-600" />
-              My Profile
-            </Button>
-          </Link>
-          <Link href="/student/resumes/builder">
-            <Button
-              size="sm"
-              className="h-9 bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-medium text-xs shadow-md shadow-teal-600/30 btn-gradient-animate transition-all hover:scale-105 active:scale-95 border border-teal-400/40"
-            >
-              <Plus className="size-3.5 mr-1.5" />
-              New Resume
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* 2. Key Metrics Row - 4 Glorious Glassmorphic Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1: Applications */}
-        <div className="group relative rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/90 via-white/80 to-teal-50/30 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-teal-950/30 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-900/15 hover:border-teal-400">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-              Applications
-            </span>
-            <div className="size-9 rounded-xl bg-gradient-to-br from-teal-500/15 to-emerald-500/20 text-teal-600 dark:text-teal-300 flex items-center justify-center border border-teal-300/40 dark:border-teal-800/50 shadow-xs shadow-teal-500/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <Briefcase className="size-4.5" />
+          <div className="relative p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
+            {/* Avatar */}
+            <div className="size-16 sm:size-[72px] rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center shrink-0 shadow-xl shadow-teal-600/30 text-xl sm:text-2xl font-heading font-bold tracking-tight select-none ring-4 ring-white/40 dark:ring-slate-800/40">
+              {initials}
             </div>
-          </div>
-          <div className="mt-3">
-            <div className="font-heading text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-200 bg-clip-text text-transparent tabular-nums">
-              0
+
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-teal-100/80 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300 border border-teal-200/50 dark:border-teal-700/40">
+                  <GraduationCap className="size-3" />
+                  {profile?.department || "Student"}
+                </span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                  <CalendarDays className="size-3" />
+                  {today}
+                </span>
+              </div>
+
+              <h1 className="font-heading text-2xl sm:text-[1.85rem] font-bold tracking-tight text-slate-900 dark:text-white leading-tight truncate">
+                {greeting},{" "}
+                <span className="bg-gradient-to-r from-teal-700 via-teal-600 to-teal-500 dark:from-teal-300 dark:via-teal-200 dark:to-teal-400 bg-clip-text text-transparent">
+                  {firstName}
+                </span>
+              </h1>
+
+              <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1 max-w-md leading-relaxed">
+                Track applications, build ATS resumes, and discover opportunities.
+              </p>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-              Active submissions
-            </p>
+
+            <div className="flex items-center gap-2.5 shrink-0 sm:self-start sm:pt-1">
+              <Link href="/student/profile">
+                <Button variant="outline" size="sm" className="h-9 text-xs font-medium border-slate-300/70 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]">
+                  <User className="size-3.5 mr-1.5 text-slate-500" />
+                  Profile
+                </Button>
+              </Link>
+              <Link href="/student/resumes/builder">
+                <Button size="sm" className="h-9 text-xs font-semibold btn-gradient-animate text-white shadow-lg shadow-teal-600/25 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] hover:shadow-xl hover:shadow-teal-600/35">
+                  <Plus className="size-3.5 mr-1.5" />
+                  New Resume
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Metric 2: Resumes */}
-        <div className="group relative rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/90 via-white/80 to-teal-50/30 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-teal-950/30 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-900/15 hover:border-teal-400">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-              ATS Resumes
-            </span>
-            <div className="size-9 rounded-xl bg-gradient-to-br from-teal-500/15 to-emerald-500/20 text-teal-600 dark:text-teal-300 flex items-center justify-center border border-teal-300/40 dark:border-teal-800/50 shadow-xs shadow-teal-500/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <FileText className="size-4.5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="font-heading text-2xl font-bold bg-gradient-to-r from-teal-700 to-emerald-700 dark:from-teal-300 dark:to-emerald-300 bg-clip-text text-transparent tabular-nums">
-              {resumes.length}
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-teal-500 inline-block" />
-              Compiled documents
-            </p>
-          </div>
-        </div>
-
-        {/* Metric 3: Skills */}
-        <div className="group relative rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/90 via-white/80 to-teal-50/30 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-teal-950/30 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-900/15 hover:border-teal-400">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-              Skills Added
-            </span>
-            <div className="size-9 rounded-xl bg-gradient-to-br from-teal-500/15 to-emerald-500/20 text-teal-600 dark:text-teal-300 flex items-center justify-center border border-teal-300/40 dark:border-teal-800/50 shadow-xs shadow-teal-500/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <Layers className="size-4.5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="font-heading text-2xl font-bold bg-gradient-to-r from-teal-700 to-emerald-700 dark:from-teal-300 dark:to-emerald-300 bg-clip-text text-transparent tabular-nums">
-              {totalSkillsCount}
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-teal-500 inline-block" />
-              Technical proficiencies
-            </p>
-          </div>
-        </div>
-
-        {/* Metric 4: CGPA */}
-        <div className="group relative rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/90 via-white/80 to-amber-50/30 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-amber-950/30 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-amber-950/15 hover:border-amber-400">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-              Academic CGPA
-            </span>
-            <div className="size-9 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/20 text-amber-600 dark:text-amber-300 flex items-center justify-center border border-amber-300/40 dark:border-amber-800/50 shadow-xs shadow-amber-500/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              <Award className="size-4.5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="font-heading text-2xl font-bold font-mono bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-300 dark:to-orange-300 bg-clip-text text-transparent tabular-nums">
-              {profile?.cgpa ? Number(profile.cgpa).toFixed(2) : "0.00"}
-              <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1 font-sans">/ 4.00</span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-amber-500 inline-block" />
-              Institutional record
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Main Dashboard Body: 2-Column Lively Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Columns: Fast Actions & Resumes */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Quick Actions (4 Glorious Radiant Tiles) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Tile 1: Resume Builder */}
-            <Link
-              href="/student/resumes/builder"
-              className="group flex flex-col justify-between rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/95 via-white/85 to-teal-50/40 dark:from-slate-900/95 dark:via-slate-900/85 dark:to-teal-950/30 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-900/15 hover:border-teal-400"
-            >
-              <div className="space-y-2.5">
-                <div className="size-10 rounded-xl bg-gradient-to-br from-teal-500/20 via-teal-500/15 to-emerald-500/20 text-teal-600 dark:text-teal-300 flex items-center justify-center border border-teal-300/50 dark:border-teal-800/60 shadow-xs shadow-teal-500/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                  <FileText className="size-5" />
+        {/* ════════════════════════════════════════════════════════
+            2. METRIC CARDS — Larger numbers, trend indicators
+            ════════════════════════════════════════════════════════ */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Applications", val: "0", sub: "Active submissions", icon: Briefcase, accent: "teal" as const, trend: null },
+            { label: "ATS Resumes", val: String(resumes.length), sub: "Compiled documents", icon: FileText, accent: "teal" as const, trend: resumes.length > 0 ? `+${resumes.length} this month` : null },
+            { label: "Skills Added", val: String(skills.length), sub: "Linked to profile", icon: Layers, accent: "teal" as const, trend: skills.length >= 3 ? "Strong profile" : "Add more skills" },
+            { label: "Academic CGPA", val: profile?.cgpa ? Number(profile.cgpa).toFixed(2) : "0.00", sub: "/ 4.00 scale", icon: Award, accent: "amber" as const, trend: profile?.cgpa && profile.cgpa >= 3.5 ? "Dean's list eligible" : null },
+          ].map((m, i) => {
+            const Icon = m.icon;
+            const cardClass = m.accent === "amber" ? "glass-card-amber" : "glass-card-teal";
+            const iconGrad = m.accent === "amber"
+              ? "from-amber-400 to-amber-600 shadow-amber-500/25"
+              : "from-teal-500 to-teal-700 shadow-teal-600/25";
+            return (
+              <div key={m.label} className={`animate-fade-up stagger-${i + 2} group ${cardClass} rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">{m.label}</span>
+                  <div className={`size-9 rounded-xl bg-gradient-to-br ${iconGrad} text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                    <Icon className="size-[18px]" />
+                  </div>
                 </div>
-                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors flex items-center gap-1.5">
-                  Resume Builder
-                  <span className="size-2 rounded-full bg-teal-500 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Create ATS-optimized resumes with our 5-step wizard and export to PDF.
-                </p>
-              </div>
-              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 mt-4 flex items-center gap-1">
-                Start wizard <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Link>
-
-            {/* Tile 2: Browse Internships */}
-            <Link
-              href="/student/jobs"
-              className="group flex flex-col justify-between rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/95 via-white/85 to-teal-50/40 dark:from-slate-900/95 dark:via-slate-900/85 dark:to-teal-950/30 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-900/15 hover:border-teal-400"
-            >
-              <div className="space-y-2.5">
-                <div className="size-10 rounded-xl bg-gradient-to-br from-emerald-500/20 via-teal-500/15 to-teal-500/20 text-emerald-600 dark:text-emerald-300 flex items-center justify-center border border-emerald-300/50 dark:border-emerald-800/60 shadow-xs shadow-emerald-500/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                  <Search className="size-5" />
+                <div className="font-heading text-[2rem] font-extrabold tracking-tight text-slate-900 dark:text-white tabular-nums leading-none">
+                  {m.val}
+                  {m.label === "Academic CGPA" && (
+                    <span className="text-xs font-normal text-slate-400 ml-1 font-sans">{m.sub}</span>
+                  )}
                 </div>
-                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
-                  Browse Internships
-                  <span className="size-2 rounded-full bg-emerald-500 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Explore verified employer openings tailored to your university major.
-                </p>
+                {m.label !== "Academic CGPA" && (
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1.5">
+                    <StatusDot color={m.accent === "amber" ? "bg-amber-500" : "bg-teal-500"} />
+                    {m.sub}
+                  </p>
+                )}
+                {m.trend && (
+                  <p className={`text-[10px] font-medium mt-1.5 flex items-center gap-1 ${
+                    m.trend.startsWith("+") || m.trend.includes("eligible") || m.trend.includes("Strong")
+                      ? "text-teal-600 dark:text-teal-400"
+                      : "text-amber-600 dark:text-amber-400"
+                  }`}>
+                    <TrendingUp className="size-3" />
+                    {m.trend}
+                  </p>
+                )}
               </div>
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-4 flex items-center gap-1">
-                Explore openings <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Link>
+            );
+          })}
+        </div>
 
-            {/* Tile 3: Profile */}
-            <Link
-              href="/student/profile"
-              className="group flex flex-col justify-between rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/95 via-white/85 to-teal-50/40 dark:from-slate-900/95 dark:via-slate-900/85 dark:to-teal-950/30 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-900/15 hover:border-teal-400"
-            >
-              <div className="space-y-2.5">
-                <div className="size-10 rounded-xl bg-gradient-to-br from-teal-500/20 via-teal-500/15 to-emerald-500/20 text-teal-600 dark:text-teal-300 flex items-center justify-center border border-teal-300/50 dark:border-teal-800/60 shadow-xs shadow-teal-500/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                  <User className="size-5" />
+        {/* ════════════════════════════════════════════════════════
+            3. MAIN BODY — 2/3 + 1/3 layout
+            ════════════════════════════════════════════════════════ */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ── Left 2/3 ── */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Quick Actions (2x2 grid) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Resume Builder — primary featured card */}
+              <Link href="/student/resumes/builder" className="animate-fade-up stagger-5 group glass-card-featured rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-teal-500/15 sm:row-span-2 flex flex-col">
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center shadow-lg shadow-teal-600/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-2">
+                      <FileText className="size-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">
+                        Resume Builder
+                      </h3>
+                      <span className="text-[10px] font-medium text-teal-600 dark:text-teal-400">Primary Tool</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Build ATS-optimized resumes with our progressive 5-step wizard. Compiles to professional PDF via QuestPDF with automatic cloud backup.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {["5-Step Wizard", "QuestPDF", "Cloud Sync"].map(tag => (
+                      <span key={tag} className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-teal-100/60 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300 border border-teal-200/40 dark:border-teal-800/40">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors flex items-center gap-1.5">
-                  Academic Profile
-                  <span className="size-2 rounded-full bg-teal-500 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Update your CGPA, department specialization, and technical bio.
-                </p>
-              </div>
-              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 mt-4 flex items-center gap-1">
-                Edit details <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Link>
+                <span className="text-xs font-semibold mt-5 flex items-center gap-1.5 text-teal-600 dark:text-teal-400">
+                  Open builder
+                  <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-2" />
+                </span>
+              </Link>
 
-            {/* Tile 4: Assessments */}
-            <Link
-              href="/student/assessments"
-              className="group flex flex-col justify-between rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/95 via-white/85 to-amber-50/40 dark:from-slate-900/95 dark:via-slate-900/85 dark:to-amber-950/30 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-amber-900/15 hover:border-amber-400"
-            >
-              <div className="space-y-2.5">
-                <div className="size-10 rounded-xl bg-gradient-to-br from-amber-500/20 via-amber-500/15 to-orange-500/20 text-amber-600 dark:text-amber-300 flex items-center justify-center border border-amber-300/50 dark:border-amber-800/60 shadow-xs shadow-amber-500/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                  <Award className="size-5" />
+              {/* Browse Internships */}
+              <Link href="/student/jobs" className="animate-fade-up stagger-6 group glass-card rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-teal-500/10">
+                <div className="space-y-2.5">
+                  <div className="size-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center shadow-lg shadow-teal-600/20 transition-all duration-300 group-hover:scale-110 group-hover:rotate-2">
+                    <Search className="size-5" />
+                  </div>
+                  <h3 className="font-heading font-semibold text-[15px] text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">Browse Internships</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Explore verified employer openings tailored to your major.</p>
                 </div>
-                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors flex items-center gap-1.5">
-                  Skill Assessments
-                  <span className="size-2 rounded-full bg-amber-500 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Take technical quizzes to earn verified skill badges for your profile.
-                </p>
+                <span className="text-xs font-semibold mt-3 flex items-center gap-1 text-teal-600 dark:text-teal-400">
+                  Explore <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-1.5" />
+                </span>
+              </Link>
+
+              {/* Two small tiles side by side */}
+              <div className="grid grid-cols-2 gap-4">
+                <Link href="/student/profile" className="animate-fade-up stagger-7 group glass-card rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-teal-500/10">
+                  <div className="size-9 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center shadow-md shadow-teal-600/20 mb-2.5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-2">
+                    <User className="size-[18px]" />
+                  </div>
+                  <h3 className="font-heading font-semibold text-[13px] text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">Profile</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">Update credentials & bio</p>
+                </Link>
+
+                <Link href="/student/assessments" className="animate-fade-up stagger-8 group glass-card-amber rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-amber-500/10">
+                  <div className="size-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shadow-md shadow-amber-500/20 mb-2.5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-2">
+                    <Award className="size-[18px]" />
+                  </div>
+                  <h3 className="font-heading font-semibold text-[13px] text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">Assessments</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">Earn verified badges</p>
+                </Link>
               </div>
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-4 flex items-center gap-1">
-                Take quiz <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Link>
+            </div>
+
+            {/* Recent Resumes */}
+            <div className="animate-fade-up stagger-8 glass-card rounded-2xl p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-heading text-base font-semibold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                    <FileText className="size-[18px] text-teal-600" />
+                    Recent Resumes
+                  </h2>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Compiled QuestPDF documents in cloud storage</p>
+                </div>
+                <Link href="/student/resumes">
+                  <Button variant="ghost" size="sm" className="text-xs font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 transition-colors">
+                    View all ({resumes.length})<ChevronRight className="size-3.5 ml-0.5" />
+                  </Button>
+                </Link>
+              </div>
+
+              {resumes.length === 0 ? (
+                <div className="py-10 text-center rounded-xl bg-slate-50/50 dark:bg-slate-800/20 border border-dashed border-slate-200/80 dark:border-slate-800">
+                  <div className="size-14 rounded-2xl bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900 text-teal-500 flex items-center justify-center mx-auto mb-3 border border-teal-200/50 dark:border-teal-800">
+                    <FileText className="size-7" />
+                  </div>
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">No resumes yet</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">
+                    Create your first ATS-optimized resume to apply for verified campus internships.
+                  </p>
+                  <Link href="/student/resumes/builder" className="inline-block mt-4">
+                    <Button size="sm" className="btn-gradient-animate text-white text-xs shadow-md shadow-teal-600/20 transition-all hover:scale-[1.03] active:scale-[0.97]">
+                      <Plus className="size-3.5 mr-1.5" />Create Resume
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100/80 dark:divide-slate-800/50">
+                  {resumes.slice(0, 3).map((r, i) => (
+                    <div key={r.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 first:pt-0 last:pb-0 group/row">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-200/50 dark:border-teal-800 transition-transform duration-200 group-hover/row:scale-105">
+                          <FileCheck className="size-[18px]" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">Resume Draft #{i + 1}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                            <Clock className="size-3" />
+                            {new Date(r.lastModified).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link href={`/student/resumes/builder?resumeId=${r.id}`}>
+                          <Button variant="outline" size="sm" className="h-8 text-xs transition-all hover:scale-[1.03] active:scale-[0.97]">Edit</Button>
+                        </Link>
+                        {r.downloadUrl ? (
+                          <a href={r.downloadUrl} target="_blank" rel="noopener noreferrer">
+                            <Button size="sm" className="h-8 text-xs btn-gradient-animate text-white shadow-sm shadow-teal-600/20 transition-all hover:scale-[1.03] active:scale-[0.97]">
+                              <Download className="size-3 mr-1.5" /> PDF
+                            </Button>
+                          </a>
+                        ) : (
+                          <Link href={`/student/resumes/builder?resumeId=${r.id}`}>
+                            <Button size="sm" variant="secondary" className="h-8 text-xs transition-all hover:scale-[1.03] active:scale-[0.97]">Finalize</Button>
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Recent Resumes Lively Glassmorphic List */}
-          <div className="rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl p-6 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <FileText className="size-4.5 text-teal-600" />
-                  Recent Resumes
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Compiled QuestPDF drafts stored in your cloud account
-                </p>
+          {/* ── Right 1/3 ── */}
+          <div className="space-y-5">
+            {/* AI Career Matches */}
+            <div className="animate-fade-up stagger-6 glass-card-teal rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gradient-to-r from-amber-50 to-amber-100/80 text-amber-800 dark:from-amber-950/60 dark:to-amber-900/40 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40 backdrop-blur-sm">
+                  <Sparkles className="size-3 text-amber-500" />
+                  AI Job Match
+                </span>
+                <Target className="size-4 text-teal-500/50" />
               </div>
-              <Link href="/student/resumes">
-                <Button variant="ghost" size="sm" className="text-xs text-teal-700 hover:text-teal-800 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/50">
-                  View all ({resumes.length}) <ChevronRight className="size-3.5 ml-1" />
+
+              <h2 className="font-heading text-sm font-semibold tracking-tight text-slate-900 dark:text-white">Recommended Roles</h2>
+
+              {/* Role cards */}
+              {[
+                { title: ".NET Backend Engineer Intern", company: "Brain Station 23", loc: "Dhaka (Hybrid)", pay: "BDT 25,000", match: 95 },
+                { title: "Full Stack React & C# Developer", company: "Therap BD", loc: "Remote", pay: "BDT 30,000", match: 90 },
+              ].map((role) => (
+                <div key={role.title} className="group/job p-3.5 rounded-xl bg-white/50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/40 space-y-2 transition-all duration-200 hover:border-teal-400/60 hover:bg-teal-50/30 dark:hover:bg-teal-950/20 hover:shadow-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-semibold text-slate-900 dark:text-white group-hover/job:text-teal-700 dark:group-hover/job:text-teal-300 transition-colors">{role.title}</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                        <Building2 className="size-3 text-teal-600" /> {role.company}
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-sm shadow-teal-500/25 shrink-0 tabular-nums">{role.match}%</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="flex items-center gap-1"><MapPin className="size-3 text-teal-500" /> {role.loc}</span>
+                    <span className="text-slate-300 dark:text-slate-700">|</span>
+                    <span className="font-semibold text-teal-700 dark:text-teal-400">{role.pay}</span>
+                  </div>
+                </div>
+              ))}
+
+              <Link href="/student/jobs" className="block pt-1">
+                <Button variant="outline" size="sm" className="w-full text-xs font-medium border-teal-300/50 dark:border-teal-800/50 hover:border-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] hover:bg-teal-50/50 dark:hover:bg-teal-950/30">
+                  Explore All Openings<ArrowUpRight className="size-3.5 ml-1" />
                 </Button>
               </Link>
             </div>
 
-            {resumes.length === 0 ? (
-              <div className="py-8 text-center rounded-lg bg-teal-50/30 dark:bg-slate-800/40 border border-dashed border-teal-200/80 dark:border-slate-800">
-                <FileText className="size-7 text-teal-500 mx-auto mb-2 opacity-60" />
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">No resumes yet</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-                  Create your first resume to apply for verified internships.
-                </p>
-                <Link href="/student/resumes/builder" className="inline-block mt-3">
-                  <Button size="sm" className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-xs shadow-xs hover:from-teal-700 hover:to-emerald-700">
-                    Create Resume
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                {resumes.slice(0, 3).map((r, i) => (
-                  <div key={r.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 first:pt-0 last:pb-0">
-                    <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-xl bg-gradient-to-br from-teal-500/15 to-emerald-500/20 text-teal-600 dark:text-teal-300 flex items-center justify-center shrink-0 border border-teal-300/40 dark:border-teal-800/50 shadow-2xs">
-                        <FileText className="size-4.5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                          Resume Draft #{i + 1}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
-                          <Clock className="size-3 text-teal-500" />
-                          {new Date(r.lastModified).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Link href={`/student/resumes/builder?resumeId=${r.id}`}>
-                        <Button variant="outline" size="sm" className="h-8 text-xs border-teal-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 hover:bg-teal-50/60 text-slate-700 dark:text-slate-300">
-                          Edit
-                        </Button>
-                      </Link>
-                      {r.downloadUrl ? (
-                        <a href={r.downloadUrl} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" className="h-8 text-xs bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-xs">
-                            <Download className="size-3 mr-1.5" /> PDF
-                          </Button>
-                        </a>
-                      ) : (
-                        <Link href={`/student/resumes/builder?resumeId=${r.id}`}>
-                          <Button size="sm" variant="secondary" className="h-8 text-xs">
-                            Finalize
-                          </Button>
-                        </Link>
-                      )}
-                    </div>
+            {/* Profile Completion */}
+            <div className="animate-fade-up stagger-7 glass-card rounded-2xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="size-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center shadow-md shadow-teal-600/20">
+                    <TrendingUp className="size-4" />
                   </div>
+                  <h3 className="font-heading text-xs font-semibold text-slate-900 dark:text-white">Profile Completion</h3>
+                </div>
+                <span className="font-heading text-sm font-bold text-teal-700 dark:text-teal-400 tabular-nums">{pct}%</span>
+              </div>
+
+              <div className="h-2.5 rounded-full bg-slate-100/80 dark:bg-slate-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-teal-400 shadow-sm shadow-teal-500/30 transition-all duration-1000 ease-out"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-2 gap-x-2">
+                {steps.map(s => (
+                  <span key={s.label} className={`text-[11px] flex items-center gap-1.5 ${s.done ? "text-teal-600 dark:text-teal-400" : "text-slate-400 dark:text-slate-500"}`}>
+                    {s.done
+                      ? <CheckCircle2 className="size-3.5 text-teal-500 shrink-0" />
+                      : <Circle className="size-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
+                    }
+                    {s.label}
+                  </span>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right 1 Column: Opportunities & Advice */}
-        <div className="space-y-6">
-          {/* Matched Jobs Radiant Card */}
-          <div className="rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl p-5 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-50 to-orange-50 text-amber-800 dark:from-amber-950/60 dark:to-orange-950/60 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 shadow-2xs">
-                <Sparkles className="size-3 text-amber-600 animate-pulse" />
-                AI Job Match
-              </span>
-              <span className="text-[11px] text-teal-600 dark:text-teal-400 font-mono font-semibold">CSE 3200</span>
             </div>
 
-            <div>
-              <h3 className="font-heading text-base font-bold text-slate-900 dark:text-white">
-                Recommended Roles
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Opportunities matching your declared skill set.
+            {/* Career Advisory */}
+            <div className="animate-fade-up stagger-8 glass-card-amber rounded-2xl p-5 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shadow-md shadow-amber-500/20">
+                  <BookOpen className="size-4" />
+                </div>
+                <h3 className="font-heading text-xs font-semibold text-slate-900 dark:text-white">Career Advisory</h3>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed pl-10">
+                Add at least 3 rated skills to your resume before applying. Resumes with verified skills rank higher in campus recruitment matching.
               </p>
             </div>
-
-            {/* Role 1 */}
-            <div className="p-3.5 rounded-xl border border-teal-100 dark:border-slate-800 bg-gradient-to-r from-white/95 to-teal-50/40 dark:from-slate-800/60 dark:to-teal-950/20 space-y-1.5 hover:border-teal-400 hover:shadow-sm transition-all">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                    .NET Backend Engineer Intern
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
-                    <Building2 className="size-3 text-teal-600" /> Brain Station 23
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-2xs">
-                  95%
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1">
-                <span className="flex items-center gap-1 font-medium">
-                  <MapPin className="size-3 text-teal-500" /> Dhaka (Hybrid)
-                </span>
-                <span>•</span>
-                <span className="font-semibold text-emerald-700 dark:text-emerald-400">BDT 25,000</span>
-              </div>
-            </div>
-
-            {/* Role 2 */}
-            <div className="p-3.5 rounded-xl border border-emerald-100 dark:border-slate-800 bg-gradient-to-r from-white/95 to-emerald-50/40 dark:from-slate-800/60 dark:to-emerald-950/20 space-y-1.5 hover:border-emerald-400 hover:shadow-sm transition-all">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                    Full Stack React & C# Developer
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
-                    <Building2 className="size-3 text-teal-600" /> Therap BD
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-2xs">
-                  90%
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1">
-                <span className="flex items-center gap-1 font-medium">
-                  <MapPin className="size-3 text-emerald-500" /> Remote
-                </span>
-                <span>•</span>
-                <span className="font-semibold text-emerald-700 dark:text-emerald-400">BDT 30,000</span>
-              </div>
-            </div>
-
-            <Link href="/student/jobs" className="block pt-1">
-              <Button variant="outline" size="sm" className="w-full text-xs border-teal-300/80 dark:border-teal-800 text-teal-800 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/50">
-                Explore All Openings <ArrowUpRight className="size-3.5 ml-1" />
-              </Button>
-            </Link>
-          </div>
-
-          {/* Clean Radiant Tip Box */}
-          <div className="rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-br from-white/95 to-amber-50/30 dark:from-slate-900/95 dark:to-amber-950/20 backdrop-blur-xl p-5 shadow-sm space-y-1.5">
-            <h4 className="font-heading text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-              <BookOpen className="size-3.5 text-amber-600" />
-              Career Advisory Tip
-            </h4>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Ensure your resume has at least 3 rated skills before applying to increase match ranking for campus recruitment drives.
-            </p>
           </div>
         </div>
-      </div>
-    </PageContainer>
+      </PageContainer>
+    </div>
   );
 }

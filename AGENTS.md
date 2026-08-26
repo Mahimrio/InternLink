@@ -106,6 +106,7 @@ Standing context for AI agents and contributors working in this monorepo. **This
   - Bad:  `Added student profile & resume stuff.`
 - **Mandatory Suggestion & Confirmation Workflow:**
   - AI agents **MUST ALWAYS suggest and propose** the exact professional branch name and commit message before creating a branch or making a commit.
+  - **Do NOT commit after each small change or incremental tweak.** Group related changes and only commit when a complete feature or prompt milestone is ready, or when the user explicitly requests a commit.
   - **Never push to GitHub (`origin`) without the user's explicit permission.** Commits remain local until the user explicitly directs the agent to push.
 - **No AI Markers or Emojis:** Commit messages, PR titles, and PR descriptions must NEVER contain emojis, robot icons, or robotic AI boilerplate phrases. Write clean, human-crafted, professional software engineering descriptions.
 - **PR title = commit message** when there's one commit; otherwise summarize the branch.
@@ -119,6 +120,7 @@ Standing context for AI agents and contributors working in this monorepo. **This
 - Do not add business logic inside Next.js Route Handlers — BFF proxy/cookie handling only.
 - Do not use `any` in TypeScript without a `// TODO: <reason>` justification comment.
 - Do not catch exceptions and swallow them silently — log or rethrow; never an empty `catch {}` block.
+- Do not make automatic git commits after every small edit or tweak — only commit on completed milestones or when directed by the user.
 - Do not push commits to GitHub (`git push`) without explicit user permission.
 - Do not use emojis, robot icons, or robotic AI-style phrasing in commit messages, pull requests, code comments, or UI text.
 
