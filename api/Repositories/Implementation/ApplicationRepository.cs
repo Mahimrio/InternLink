@@ -33,4 +33,41 @@ public class ApplicationRepository : Repository<Application>, IApplicationReposi
 
         return await query.ToListAsync(ct);
     }
+
+    public async Task<HashSet<Guid>> GetAppliedJobIdsForStudentAsync(Guid studentId, CancellationToken ct = default)
+    {
+        var jobIds = await Set
+            .AsNoTracking()
+            .Where(a => a.StudentId == studentId)
+            .Select(a => a.JobId)
+            .ToListAsync(ct);
+
+        return jobIds.ToHashSet();
+    }
+
+    public async Task<bool> ExistsAsync(Guid jobId, Guid studentId, CancellationToken ct = default)
+    {
+        return await Set
+            .AnyAsync(a => a.JobId == jobId && a.StudentId == studentId, ct);
+    }
+
+    public async Task<IReadOnlyList<Application>> GetStudentApplicationsWithDetailsAsync(
+        Guid studentId, ApplicationStatus? status, CancellationToken ct = default)
+    {
+        var query = Set
+            .Include(a => a.Job)
+                .ThenInclude(j => j.Company)
+            .Include(a => a.AttachedResume)
+            .AsNoTracking()
+            .Where(a => a.StudentId == studentId);
+
+        if (status.HasValue)
+        {
+            query = query.Where(a => a.ApplicationStatus == status.Value);
+        }
+
+        return await query
+            .OrderByDescending(a => a.SubmittedAt)
+            .ToListAsync(ct);
+    }
 }
