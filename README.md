@@ -54,9 +54,16 @@ Connects students, companies, counselors, and admins through a single platform w
 | **Backend** | ASP.NET Core 8, Controllers-only, EF Core 8, Npgsql | Docker → Render |
 | **Database** | Supabase PostgreSQL (15 tables) | Supabase |
 | **Auth** | JWT (15 min) + httpOnly refresh cookie (7 days, rotated) | BFF pattern |
-| **Cache/Queue** | Redis (caching, sessions, job queue) | Docker/Render |
-| **Storage** | MinIO (S3-compatible) for file uploads | Docker/Render |
-| **Email** | SMTP (MailHog for dev) | Docker |
+| **Storage** | Supabase Storage (S3-compatible) for resume PDFs | Supabase Cloud |
+| **Document Generation** | QuestPDF (In-memory streaming, Community license) | API in-memory |
+| **Email** | SMTP (MailHog / DevEmailSender for dev) | Docker / Smtp |
+
+---
+
+### Resume Document Generation & Cloud Storage
+
+- **In-Memory Streaming:** Resume PDFs are generated entirely in memory via `QuestPDF` (`MemoryStream`) and streamed directly to Supabase Storage (`resumes/{studentId}/{resumeId}.pdf`). Because the API runs in ephemeral container environments (e.g. Render), no file is written to local container disk at any point.
+- **QuestPDF License:** Configured with `QuestPDF.Settings.License = LicenseType.Community;` in `Program.cs`. The Community license is completely free for academic, individual, and open-source non-commercial projects.
 
 ---
 
