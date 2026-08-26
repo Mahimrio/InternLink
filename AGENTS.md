@@ -96,10 +96,17 @@ Standing context for AI agents and contributors working in this monorepo. **This
 
 ## 7. Git conventions
 
-- **Branches:** one feature per branch, prefixed: `feat/`, `fix/`, `chore/`, `docs/`, `ci/`, `test/`, `refactor/`, `style/`.
-- **Commit messages:** Conventional Commits — `type(scope): description`. Imperative mood, lowercase, no trailing period.
-  - Good: `feat(api): add job recommendation endpoint`
-  - Bad:  `Added Job Recommendation Endpoint.`
+- **Professional Branch Naming:** Always use standardized, lowercase, kebab-case branch names prefixed with type:
+  - Format: `<type>/<scope>-<short-description>`
+  - Prefixes: `feat/`, `fix/`, `chore/`, `docs/`, `ci/`, `test/`, `refactor/`, `style/`
+  - Examples: `feat/api-student-resume-builder`, `feat/ui-student-profile`, `fix/auth-otp-expiration`
+- **Professional Commit Messages:** Conventional Commits standard:
+  - Format: `type(scope): imperative description without trailing period`
+  - Good: `feat(student): implement profile and resume builder API with Supabase Storage`
+  - Bad:  `Added student profile & resume stuff.`
+- **Mandatory Suggestion & Confirmation Workflow:**
+  - AI agents **MUST ALWAYS suggest and propose** the exact professional branch name and commit message before creating a branch or making a commit.
+  - **Never push to GitHub (`origin`) without the user's explicit permission.** Commits remain local until the user explicitly directs the agent to push.
 - **PR title = commit message** when there's one commit; otherwise summarize the branch.
 
 ## 8. Do not
@@ -111,6 +118,7 @@ Standing context for AI agents and contributors working in this monorepo. **This
 - Do not add business logic inside Next.js Route Handlers — BFF proxy/cookie handling only.
 - Do not use `any` in TypeScript without a `// TODO: <reason>` justification comment.
 - Do not catch exceptions and swallow them silently — log or rethrow; never an empty `catch {}` block.
+- Do not push commits to GitHub (`git push`) without explicit user permission.
 
 ## 9. When in doubt
 
