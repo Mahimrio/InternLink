@@ -123,19 +123,12 @@ export default function StudentDashboardPage() {
   }, 0);
 
   return (
-    <PageContainer className="py-8 space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
-      {/* Ambient Glassmorphic Background Orbs */}
-      <div className="fixed top-16 right-1/4 -z-10 h-80 w-80 rounded-full bg-teal-500/10 dark:bg-teal-500/15 blur-[120px] pointer-events-none animate-pulse" />
-      <div className="fixed bottom-16 left-1/4 -z-10 h-80 w-80 rounded-full bg-amber-500/10 dark:bg-amber-500/15 blur-[120px] pointer-events-none animate-pulse" />
-
-      {/* 1. Header with Subtle Frosted Glass Card */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-xs p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all">
+    <PageContainer className="py-8 space-y-8 animate-in fade-in duration-300">
+      {/* 1. Header with High-Contrast Card */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Welcome back,{" "}
-            <span className="bg-gradient-to-r from-teal-700 via-teal-600 to-teal-800 dark:from-teal-300 dark:to-teal-100 bg-clip-text text-transparent">
-              {displayName}
-            </span>
+            Welcome back, {displayName}
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             {profile?.department ? `${profile.department} • ` : ""}
@@ -143,12 +136,12 @@ export default function StudentDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <Link href="/student/profile">
             <Button
               variant="outline"
               size="sm"
-              className="h-9 font-medium text-xs border-slate-200/80 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              className="h-9 font-medium text-xs border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200"
             >
               <User className="size-3.5 mr-1.5 text-slate-500" />
               My Profile
@@ -157,7 +150,7 @@ export default function StudentDashboardPage() {
           <Link href="/student/resumes/builder">
             <Button
               size="sm"
-              className="h-9 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-medium text-xs shadow-md shadow-teal-700/20 btn-gradient-animate transition-transform active:scale-[0.98]"
+              className="h-9 bg-teal-700 hover:bg-teal-800 text-white font-medium text-xs shadow-sm btn-gradient-animate transition-transform active:scale-[0.98]"
             >
               <Plus className="size-3.5 mr-1.5" />
               New Resume
@@ -166,16 +159,16 @@ export default function StudentDashboardPage() {
         </div>
       </div>
 
-      {/* 2. Key Metrics Row - 4 Glassmorphic Cards with Smooth Hover Animation */}
+      {/* 2. Key Metrics Row - 4 Crisp, Clearly-Defined Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1: Applications */}
-        <div className="group relative rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-teal-400/50">
+        <div className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:border-teal-500 hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
               Applications
             </span>
-            <div className="size-8 rounded-lg bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-100/60 dark:border-teal-900/40 group-hover:scale-110 transition-transform">
-              <Briefcase className="size-4" />
+            <div className="size-9 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-200/60 dark:border-teal-900">
+              <Briefcase className="size-4.5" />
             </div>
           </div>
           <div className="mt-3">
@@ -183,20 +176,20 @@ export default function StudentDashboardPage() {
               0
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-teal-500 inline-block animate-pulse" />
+              <span className="size-1.5 rounded-full bg-teal-600 inline-block" />
               Active submissions
             </p>
           </div>
         </div>
 
         {/* Metric 2: Resumes */}
-        <div className="group relative rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-teal-400/50">
+        <div className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:border-teal-500 hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
               ATS Resumes
             </span>
-            <div className="size-8 rounded-lg bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-100/60 dark:border-teal-900/40 group-hover:scale-110 transition-transform">
-              <FileText className="size-4" />
+            <div className="size-9 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-200/60 dark:border-teal-900">
+              <FileText className="size-4.5" />
             </div>
           </div>
           <div className="mt-3">
@@ -204,20 +197,20 @@ export default function StudentDashboardPage() {
               {resumes.length}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-teal-500 inline-block" />
+              <span className="size-1.5 rounded-full bg-teal-600 inline-block" />
               Compiled documents
             </p>
           </div>
         </div>
 
         {/* Metric 3: Skills */}
-        <div className="group relative rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-teal-400/50">
+        <div className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:border-teal-500 hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
               Skills Added
             </span>
-            <div className="size-8 rounded-lg bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-100/60 dark:border-teal-900/40 group-hover:scale-110 transition-transform">
-              <Layers className="size-4" />
+            <div className="size-9 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-200/60 dark:border-teal-900">
+              <Layers className="size-4.5" />
             </div>
           </div>
           <div className="mt-3">
@@ -225,20 +218,20 @@ export default function StudentDashboardPage() {
               {totalSkillsCount}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-teal-500 inline-block" />
+              <span className="size-1.5 rounded-full bg-teal-600 inline-block" />
               Technical proficiencies
             </p>
           </div>
         </div>
 
         {/* Metric 4: CGPA */}
-        <div className="group relative rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-amber-400/50">
+        <div className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:border-amber-500 hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
               Academic CGPA
             </span>
-            <div className="size-8 rounded-lg bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 flex items-center justify-center border border-amber-100/60 dark:border-amber-900/40 group-hover:scale-110 transition-transform">
-              <Award className="size-4" />
+            <div className="size-9 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 flex items-center justify-center border border-amber-200/60 dark:border-amber-900">
+              <Award className="size-4.5" />
             </div>
           </div>
           <div className="mt-3">
@@ -254,22 +247,22 @@ export default function StudentDashboardPage() {
         </div>
       </div>
 
-      {/* 3. Main Dashboard Body: 2-Column Clean Glassmorphic Layout */}
+      {/* 3. Main Dashboard Body: 2-Column High-Contrast Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Columns: Fast Actions & Resumes */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Quick Actions (4 Clean Glassmorphic Tiles) */}
+          {/* Quick Actions (4 Crisp Cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Tile 1: Resume Builder */}
             <Link
               href="/student/resumes/builder"
-              className="group flex flex-col justify-between rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-teal-400/50"
+              className="group flex flex-col justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:border-teal-500 hover:shadow-md"
             >
               <div className="space-y-2.5">
-                <div className="size-9 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-100/60 dark:border-teal-900/40 group-hover:scale-105 transition-transform">
+                <div className="size-9 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 flex items-center justify-center border border-teal-200/60 dark:border-teal-900">
                   <FileText className="size-4.5" />
                 </div>
-                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">
+                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
                   Resume Builder
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -284,13 +277,13 @@ export default function StudentDashboardPage() {
             {/* Tile 2: Browse Internships */}
             <Link
               href="/student/jobs"
-              className="group flex flex-col justify-between rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-teal-400/50"
+              className="group flex flex-col justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:border-teal-500 hover:shadow-md"
             >
               <div className="space-y-2.5">
-                <div className="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200/60 dark:border-slate-700 group-hover:scale-105 transition-transform">
+                <div className="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700">
                   <Search className="size-4.5" />
                 </div>
-                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">
+                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
                   Browse Internships
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -305,13 +298,13 @@ export default function StudentDashboardPage() {
             {/* Tile 3: Profile */}
             <Link
               href="/student/profile"
-              className="group flex flex-col justify-between rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-teal-400/50"
+              className="group flex flex-col justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:border-teal-500 hover:shadow-md"
             >
               <div className="space-y-2.5">
-                <div className="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200/60 dark:border-slate-700 group-hover:scale-105 transition-transform">
+                <div className="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700">
                   <User className="size-4.5" />
                 </div>
-                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">
+                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
                   Academic Profile
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -326,10 +319,10 @@ export default function StudentDashboardPage() {
             {/* Tile 4: Assessments */}
             <Link
               href="/student/assessments"
-              className="group flex flex-col justify-between rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-amber-400/50"
+              className="group flex flex-col justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm transition-all hover:border-amber-500 hover:shadow-md"
             >
               <div className="space-y-2.5">
-                <div className="size-9 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 flex items-center justify-center border border-amber-100/60 dark:border-amber-900/40 group-hover:scale-105 transition-transform">
+                <div className="size-9 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 flex items-center justify-center border border-amber-200/60 dark:border-amber-900">
                   <Award className="size-4.5" />
                 </div>
                 <h3 className="font-heading font-bold text-base text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
@@ -345,8 +338,8 @@ export default function StudentDashboardPage() {
             </Link>
           </div>
 
-          {/* Recent Resumes Glassmorphic List */}
-          <div className="rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-6 shadow-xs space-y-4">
+          {/* Recent Resumes List */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -365,14 +358,14 @@ export default function StudentDashboardPage() {
             </div>
 
             {resumes.length === 0 ? (
-              <div className="py-8 text-center rounded-lg bg-white/40 dark:bg-slate-800/40 border border-dashed border-slate-200/80 dark:border-slate-800">
+              <div className="py-8 text-center rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-800">
                 <FileText className="size-7 text-slate-400 mx-auto mb-2 opacity-60" />
                 <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">No resumes yet</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
                   Create your first resume to apply for verified internships.
                 </p>
                 <Link href="/student/resumes/builder" className="inline-block mt-3">
-                  <Button size="sm" className="bg-teal-700 text-white text-xs hover:bg-teal-800 shadow-xs">
+                  <Button size="sm" className="bg-teal-700 hover:bg-teal-800 text-white text-xs shadow-xs">
                     Create Resume
                   </Button>
                 </Link>
@@ -382,8 +375,8 @@ export default function StudentDashboardPage() {
                 {resumes.slice(0, 3).map((r, i) => (
                   <div key={r.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 first:pt-0 last:pb-0">
                     <div className="flex items-center gap-3">
-                      <div className="size-8 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0 border border-teal-100/60 dark:border-teal-900/40">
-                        <FileText className="size-4" />
+                      <div className="size-9 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0 border border-teal-200/60 dark:border-teal-900">
+                        <FileText className="size-4.5" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -402,7 +395,7 @@ export default function StudentDashboardPage() {
 
                     <div className="flex items-center gap-2">
                       <Link href={`/student/resumes/builder?resumeId=${r.id}`}>
-                        <Button variant="outline" size="sm" className="h-8 text-xs bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
+                        <Button variant="outline" size="sm" className="h-8 text-xs border-slate-300 dark:border-slate-700">
                           Edit
                         </Button>
                       </Link>
@@ -430,9 +423,9 @@ export default function StudentDashboardPage() {
         {/* Right 1 Column: Opportunities & Advice */}
         <div className="space-y-6">
           {/* Matched Jobs Card */}
-          <div className="rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs space-y-4">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                 <Sparkles className="size-3 text-amber-600" />
                 AI Job Match
               </span>
@@ -449,7 +442,7 @@ export default function StudentDashboardPage() {
             </div>
 
             {/* Role 1 */}
-            <div className="p-3 rounded-lg border border-slate-100/80 dark:border-slate-800 bg-white/80 dark:bg-slate-800/50 space-y-1.5 hover:border-teal-400/50 transition-colors">
+            <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 space-y-1.5 hover:border-teal-500 transition-colors">
               <div className="flex items-start justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">
@@ -459,7 +452,7 @@ export default function StudentDashboardPage() {
                     <Building2 className="size-3 text-teal-600" /> Brain Station 23
                   </p>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-200">
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
                   95%
                 </span>
               </div>
@@ -473,7 +466,7 @@ export default function StudentDashboardPage() {
             </div>
 
             {/* Role 2 */}
-            <div className="p-3 rounded-lg border border-slate-100/80 dark:border-slate-800 bg-white/80 dark:bg-slate-800/50 space-y-1.5 hover:border-teal-400/50 transition-colors">
+            <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 space-y-1.5 hover:border-teal-500 transition-colors">
               <div className="flex items-start justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">
@@ -483,7 +476,7 @@ export default function StudentDashboardPage() {
                     <Building2 className="size-3 text-teal-600" /> Therap BD
                   </p>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-200">
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
                   90%
                 </span>
               </div>
@@ -497,14 +490,14 @@ export default function StudentDashboardPage() {
             </div>
 
             <Link href="/student/jobs" className="block pt-1">
-              <Button variant="outline" size="sm" className="w-full text-xs bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm">
+              <Button variant="outline" size="sm" className="w-full text-xs border-slate-300 dark:border-slate-700">
                 Explore All Openings <ArrowUpRight className="size-3.5 ml-1" />
               </Button>
             </Link>
           </div>
 
           {/* Clean Tip Box */}
-          <div className="rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md p-5 shadow-xs space-y-1.5">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-1.5">
             <h4 className="font-heading text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <BookOpen className="size-3.5 text-teal-600" />
               Career Advisory Tip
