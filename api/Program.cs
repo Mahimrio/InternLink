@@ -5,11 +5,15 @@ using DotNetEnv;
 using InternLinkApi.Models;
 using InternLinkApi.Repositories.Implementation;
 using InternLinkApi.Repositories.Interface;
-using InternLinkApi.Services.AssessmentService;
 using InternLinkApi.Services.EmailSender;
 using InternLinkApi.Services.JobService;
 using InternLinkApi.Services.ProfileService;
 using InternLinkApi.Services.ResumeService;
+using InternLinkApi.Services.CompanyProfileService;
+using InternLinkApi.Services.CompanyJobService;
+using InternLinkApi.Services.StudentSkillService;
+using InternLinkApi.Services.AtsService;
+using InternLinkApi.Services.AdminService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +39,16 @@ var connectionString = builder.Configuration.GetConnectionString("SupabaseDb")
         + "or add it to appsettings.json under ConnectionStrings:SupabaseDb.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, npgsql =>
+    {
+        // The Supabase pooler can drop or slowly establish connections; retry transient
+        // failures instead of surfacing 500s to callers.
+        npgsql.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorCodesToAdd: null);
+        npgsql.CommandTimeout(60);
+    }));
 
 builder.Services.AddIdentity<User, Role>(options =>
     {
@@ -105,16 +118,24 @@ builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
+builder.Services.AddScoped<IUserAdminRepository, UserAdminRepository>();
+builder.Services.AddScoped<IAdminAnalyticsRepository, AdminAnalyticsRepository>();
 
-// ── Services ─────────────────────────────────────────────────────────
-builder.Services.AddSingleton<IAssessmentQuestionBankService, AssessmentQuestionBankService>();
-builder.Services.AddSingleton<IAssessmentSessionService, AssessmentSessionService>();
-builder.Services.AddScoped<IAssessmentService, AssessmentService>();
+// ── Services ────────────────────────────────────────────────
 builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IResumeService, ResumeService>();
+builder.Services.AddScoped<ICompanyProfileService, CompanyProfileService>();
+builder.Services.AddScoped<ICompanyJobService, CompanyJobService>();
+builder.Services.AddScoped<IStudentSkillService, StudentSkillService>();
+builder.Services.AddScoped<IAtsService, AtsService>();
+builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+builder.Services.AddScoped<IAdminCompanyService, AdminCompanyService>();
+builder.Services.AddScoped<IAdminJobService, AdminJobService>();
+builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]

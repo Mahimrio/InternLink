@@ -15,4 +15,8 @@ public interface IAssessmentRepository
     Task AddAssessmentAsync(Assessment assessment, CancellationToken ct = default);
     Task EnsureStudentSkillLinkedAsync(Guid studentId, Guid skillId, int proficiency, CancellationToken ct = default);
     Task<int> SaveChangesAsync(CancellationToken ct = default);
+
+    // Recommendation/ATS-side verified-skill lookups (company feature).
+    Task<IReadOnlyList<string>> GetVerifiedSkillNamesAsync(Guid studentId, int minScore, CancellationToken ct = default);
+    Task<IReadOnlyDictionary<Guid, int>> GetVerifiedSkillCountsAsync(IReadOnlyCollection<Guid> studentIds, int minScore, CancellationToken ct = default);
 }

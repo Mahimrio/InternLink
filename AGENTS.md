@@ -145,7 +145,8 @@ If a later prompt's instructions seem to conflict with anything stated here, **f
   - **Animations:** Use staggered entry animations (`animate-in fade-in slide-in-from-bottom-X`). Use subtle pulsing/glowing colored orbs in the background of main pages (Landing, Auth) to add depth.
   - **Primary CTA Buttons:** Apply the custom `.btn-gradient-animate` class for a prominent, looping teal shimmer effect on major actions (Log In, Register, primary dashboard actions).
 - **Base UI Integration:**
-  - When replacing a Base UI `<Button>` component's underlying element with a Next.js `<Link>` (via `render={<Link href="..." />}`), you MUST pass `nativeButton={false}` to avoid React console errors about native button semantics on anchor tags.
+  - For **navigation**, do NOT route a link through the Base UI `<Button>` via `render={<Link/>}`. Base UI's button (`nativeButton={false}`) applies `role="button"` and its own click handling, which swallows the anchor's navigation — the element renders but clicking does nothing. Instead, style a real Next.js `<Link>` (or `<a>`) with the button classes: `<Link href="..." className={buttonVariants({ variant, size, className })}>`. Import `buttonVariants` from `@/components/ui/button`.
+  - Keep the Base UI `<Button>` for real button actions (`onClick`, form submit). When you genuinely need a Base UI primitive (e.g. `DialogClose`, `DropdownMenuTrigger`) to render as a `<Button>`, `render={<Button .../>}` is fine.
 - **Layout:**
   - Use `components/shared/page-container.tsx` (`<PageContainer>`) for standard content (max-w-7xl).
   - Header and footer use a wider edge-to-edge layout (`max-w-[1600px]`).

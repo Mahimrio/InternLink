@@ -114,6 +114,37 @@ public class AssessmentRepository : IAssessmentRepository
         }
     }
 
+    // Recommendation/ATS-side verified-skill lookups (company feature).
+    public async Task<IReadOnlyList<string>> GetVerifiedSkillNamesAsync(
+        Guid studentId, int minScore, CancellationToken ct = default)
+    {
+        return await _context.Assessments
+            .AsNoTracking()
+            .Where(a => a.StudentId == studentId && a.AchievedScore >= minScore)
+            .Select(a => a.Skill.SkillName)
+            .Distinct()
+            .OrderBy(name => name)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, int>> GetVerifiedSkillCountsAsync(
+        IReadOnlyCollection<Guid> studentIds, int minScore, CancellationToken ct = default)
+    {
+        if (studentIds.Count == 0)
+        {
+            return new Dictionary<Guid, int>();
+        }
+
+        var rows = await _context.Assessments
+            .AsNoTracking()
+            .Where(a => studentIds.Contains(a.StudentId) && a.AchievedScore >= minScore)
+            .GroupBy(a => a.StudentId)
+            .Select(g => new { StudentId = g.Key, Count = g.Select(x => x.SkillId).Distinct().Count() })
+            .ToListAsync(ct);
+
+        return rows.ToDictionary(r => r.StudentId, r => r.Count);
+    }
+
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
         return await _context.SaveChangesAsync(ct);
