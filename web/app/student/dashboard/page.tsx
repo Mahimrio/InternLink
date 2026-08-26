@@ -26,7 +26,6 @@ import {
   FileCheck,
   BookOpen,
   TrendingUp,
-  Zap,
   Target,
   CheckCircle2,
   Circle,
@@ -88,19 +87,32 @@ export default function StudentDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!accessToken && !isAuthLoading) { setIsLoading(false); return; }
+    if (!accessToken) {
+      if (!isAuthLoading) {
+        Promise.resolve().then(() => setIsLoading(false));
+      }
+      return;
+    }
+
+    let isMounted = true;
     async function load() {
       try {
-        setIsLoading(true);
         const [p, r] = await Promise.allSettled([
           apiClient<StudentProfile>("/api/student/profile", { token: accessToken }),
           apiClient<ResumeItem[]>("/api/student/resumes", { token: accessToken }),
         ]);
+        if (!isMounted) return;
         if (p.status === "fulfilled") setProfile(p.value);
         if (r.status === "fulfilled") setResumes(r.value || []);
-      } catch { /* graceful */ } finally { setIsLoading(false); }
+      } catch { /* graceful */ } finally {
+        if (isMounted) setIsLoading(false);
+      }
     }
-    if (accessToken) load();
+    load();
+
+    return () => {
+      isMounted = false;
+    };
   }, [accessToken, isAuthLoading]);
 
   const greeting = useMemo(() => getGreeting(), []);
@@ -172,7 +184,7 @@ export default function StudentDashboardPage() {
 
           <div className="relative p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
             {/* Avatar */}
-            <div className="size-16 sm:size-[72px] rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center shrink-0 shadow-xl shadow-teal-600/30 text-xl sm:text-2xl font-heading font-bold tracking-tight select-none ring-4 ring-white/40 dark:ring-slate-800/40">
+            <div title={fullName} className="size-16 sm:size-[72px] rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center shrink-0 shadow-xl shadow-teal-600/30 text-xl sm:text-2xl font-heading font-bold tracking-tight select-none ring-4 ring-white/40 dark:ring-slate-800/40">
               {initials}
             </div>
 

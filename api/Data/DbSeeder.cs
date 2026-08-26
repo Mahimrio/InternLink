@@ -9,10 +9,21 @@ public static class DbSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext db, UserManager<User> userManager, RoleManager<Role> roleManager)
     {
-        // Idempotency guard: if companies already exist, skip all data seeding.
+        // Idempotency guard: if companies already exist, refresh seed job deadlines if expired and return.
         if (await db.Companies.AnyAsync())
         {
-            Console.WriteLine("INFO: Database already seeded — skipping.");
+            var utcNow = DateTimeOffset.UtcNow;
+            var expiredJobs = await db.Jobs.Where(j => j.DeadLine < utcNow && j.IsApproved && !j.IsClosed).ToListAsync();
+            if (expiredJobs.Count != 0)
+            {
+                foreach (var j in expiredJobs)
+                {
+                    j.DeadLine = utcNow.AddDays(30);
+                }
+                await db.SaveChangesAsync();
+                Console.WriteLine($"INFO: Refreshed deadlines for {expiredJobs.Count} seeded jobs.");
+            }
+            Console.WriteLine("INFO: Database already seeded — skipping initial setup.");
             return;
         }
 

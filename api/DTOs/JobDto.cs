@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace InternLinkApi.DTOs;
 
 public class JobDto
@@ -10,6 +12,7 @@ public class JobDto
     public string SelectionCriteria { get; set; } = string.Empty;
     public string LocationType { get; set; } = string.Empty;
     public DateTimeOffset DeadLine { get; set; }
+    public bool HasApplied { get; set; }
     public List<JobSkillDto> RequiredSkills { get; set; } = [];
 }
 
@@ -17,4 +20,7 @@ public class JobSkillDto
 {
     public string SkillName { get; set; } = string.Empty;
     public int RequiredImportanceWeight { get; set; }
+
+    [JsonPropertyName("weight")]
+    public int Weight => RequiredImportanceWeight;
 }
