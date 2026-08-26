@@ -17,7 +17,7 @@ import { useAuth } from "@/lib/auth-context";
 import { apiClient } from "@/lib/api-client";
 import { AtsApplicantDetail } from "@/lib/ats";
 import { PageContainer } from "@/components/shared/page-container";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApplicationFunnel } from "@/components/student/application-funnel";
@@ -59,16 +59,13 @@ export default function AtsApplicantDetailPage({ params }: { params: Promise<{ i
 
   return (
     <PageContainer narrow className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <Button
-        variant="ghost"
-        size="sm"
-        render={<Link href="/company/ats" />}
-        nativeButton={false}
-        className="mb-4 -ml-2 text-muted-foreground"
+      <Link
+        href="/company/ats"
+        className={buttonVariants({ variant: "ghost", size: "sm", className: "mb-4 -ml-2 text-muted-foreground" })}
       >
         <ArrowLeft className="mr-1 size-4" />
         Back to Pipeline
-      </Button>
+      </Link>
 
       {isLoading ? (
         <div className="space-y-6">
@@ -148,20 +145,15 @@ export default function AtsApplicantDetailPage({ params }: { params: Promise<{ i
             </CardHeader>
             <CardContent className="flex flex-wrap items-center gap-3">
               {detail.resumeDownloadUrl ? (
-                <Button
-                  render={
-                    <a
-                      href={detail.resumeDownloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    />
-                  }
-                  nativeButton={false}
-                  className="bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white"
+                <a
+                  href={detail.resumeDownloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({ className: "bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white" })}
                 >
                   <Download className="mr-1.5 size-4" />
                   Download Resume
-                </Button>
+                </a>
               ) : (
                 <p className="text-sm text-muted-foreground">
                   This applicant hasn&apos;t attached a finalized resume.

@@ -15,7 +15,7 @@ import {
   LOCATION_TYPE_LABELS,
 } from "@/lib/company";
 import { PageContainer } from "@/components/shared/page-container";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -107,14 +107,13 @@ export default function CompanyJobsPage() {
         </p>
       </div>
       {isVerified && (
-        <Button
-          render={<Link href="/company/jobs/new" />}
-          nativeButton={false}
-          className="bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white shadow-sm"
+        <Link
+          href="/company/jobs/new"
+          className={buttonVariants({ className: "bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white shadow-sm" })}
         >
           <Plus className="mr-1.5 size-4" />
           New Job
-        </Button>
+        </Link>
       )}
     </div>
   );
@@ -146,14 +145,13 @@ export default function CompanyJobsPage() {
                 Publish your first internship to start receiving applications.
               </p>
             </div>
-            <Button
-              render={<Link href="/company/jobs/new" />}
-              nativeButton={false}
-              className="bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white shadow-sm"
+            <Link
+              href="/company/jobs/new"
+              className={buttonVariants({ className: "bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white shadow-sm" })}
             >
               <Plus className="mr-1.5 size-4" />
               New Job
-            </Button>
+            </Link>
           </CardContent>
         </Card>
       ) : (
@@ -193,15 +191,13 @@ export default function CompanyJobsPage() {
                       <TableCell className="text-muted-foreground">{job.requiredSkills.length}</TableCell>
                       <TableCell className="pr-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            render={<Link href={`/company/jobs/${job.id}/edit`} />}
-                            nativeButton={false}
+                          <Link
+                            href={`/company/jobs/${job.id}/edit`}
+                            className={buttonVariants({ variant: "ghost", size: "sm" })}
                           >
                             <Pencil className="mr-1 size-3.5" />
                             Edit
-                          </Button>
+                          </Link>
                           <Button
                             variant="ghost"
                             size="sm"

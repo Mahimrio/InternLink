@@ -9,7 +9,7 @@ import { apiClient } from "@/lib/api-client";
 import { useCompanyProfile } from "@/lib/company-context";
 import { SkillOption } from "@/lib/company";
 import { PageContainer } from "@/components/shared/page-container";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobForm } from "@/components/company/job-form";
@@ -40,16 +40,13 @@ export default function NewJobPage() {
 
   return (
     <PageContainer narrow className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <Button
-        variant="ghost"
-        size="sm"
-        render={<Link href="/company/jobs" />}
-        nativeButton={false}
-        className="mb-4 -ml-2 text-muted-foreground"
+      <Link
+        href="/company/jobs"
+        className={buttonVariants({ variant: "ghost", size: "sm", className: "mb-4 -ml-2 text-muted-foreground" })}
       >
         <ArrowLeft className="mr-1 size-4" />
         Back to Job Postings
-      </Button>
+      </Link>
 
       <div className="mb-8">
         <h1 className="font-heading text-3xl font-bold tracking-tight">Post a New Job</h1>
