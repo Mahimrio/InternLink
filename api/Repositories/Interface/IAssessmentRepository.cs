@@ -2,12 +2,17 @@ using InternLinkApi.Models;
 
 namespace InternLinkApi.Repositories.Interface;
 
-public interface IAssessmentRepository : IRepository<Assessment>
+public interface IAssessmentRepository
 {
-    // Distinct names of skills the student has "verified" by scoring at/above the threshold.
-    Task<IReadOnlyList<string>> GetVerifiedSkillNamesAsync(Guid studentId, int minScore, CancellationToken ct = default);
-
-    // Distinct verified-skill count per student, for a batch of students (avoids N+1).
-    Task<IReadOnlyDictionary<Guid, int>> GetVerifiedSkillCountsAsync(
-        IReadOnlyCollection<Guid> studentIds, int minScore, CancellationToken ct = default);
+    Task<IReadOnlyList<Assessment>> GetByStudentIdAsync(Guid studentId, CancellationToken ct = default);
+    Task<IReadOnlyList<Assessment>> GetByStudentAndSkillAsync(Guid studentId, Guid skillId, CancellationToken ct = default);
+    Task<Dictionary<Guid, int>> GetBestScoresForStudentAsync(Guid studentId, CancellationToken ct = default);
+    Task<HashSet<Guid>> GetVerifiedSkillIdsForStudentAsync(Guid studentId, CancellationToken ct = default);
+    Task<IReadOnlyList<string>> GetVerifiedSkillNamesForStudentAsync(Guid studentId, CancellationToken ct = default);
+    Task<IReadOnlyList<Skill>> GetAllSkillsAsync(CancellationToken ct = default);
+    Task<Skill?> GetSkillByIdAsync(Guid skillId, CancellationToken ct = default);
+    Task<Skill?> GetSkillByNameAsync(string skillName, CancellationToken ct = default);
+    Task AddAssessmentAsync(Assessment assessment, CancellationToken ct = default);
+    Task EnsureStudentSkillLinkedAsync(Guid studentId, Guid skillId, int proficiency, CancellationToken ct = default);
+    Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
