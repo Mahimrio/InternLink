@@ -7,10 +7,12 @@ namespace InternLinkApi.Services.ProfileService;
 public class ProfileService : IProfileService
 {
     private readonly IStudentRepository _studentRepository;
+    private readonly IAssessmentRepository _assessmentRepository;
 
-    public ProfileService(IStudentRepository studentRepository)
+    public ProfileService(IStudentRepository studentRepository, IAssessmentRepository assessmentRepository)
     {
         _studentRepository = studentRepository;
+        _assessmentRepository = assessmentRepository;
     }
 
     public async Task<ProfileDto?> GetProfileAsync(Guid userId, CancellationToken ct = default)
@@ -18,7 +20,8 @@ public class ProfileService : IProfileService
         var student = await _studentRepository.GetByUserIdAsync(userId, ct);
         if (student is null) return null;
 
-        return MapToDto(student);
+        var verifiedSkills = await _assessmentRepository.GetVerifiedSkillNamesForStudentAsync(student.Id, ct);
+        return MapToDto(student, verifiedSkills);
     }
 
     public async Task<ProfileDto> UpdateProfileAsync(Guid userId, UpdateProfileRequestDto dto, CancellationToken ct = default)
@@ -43,10 +46,11 @@ public class ProfileService : IProfileService
         await _studentRepository.UpdateAsync(student, ct);
         await _studentRepository.SaveChangesAsync(ct);
 
-        return MapToDto(student);
+        var verifiedSkills = await _assessmentRepository.GetVerifiedSkillNamesForStudentAsync(student.Id, ct);
+        return MapToDto(student, verifiedSkills);
     }
 
-    private static ProfileDto MapToDto(Student student) =>
+    private static ProfileDto MapToDto(Student student, IReadOnlyList<string> verifiedSkills) =>
         new(
             student.FirstName,
             student.LastName,
@@ -54,6 +58,7 @@ public class ProfileService : IProfileService
             student.InstitutionalId,
             student.Department,
             student.Biography,
-            student.Interests
+            student.Interests,
+            verifiedSkills
         );
 }
