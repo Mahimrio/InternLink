@@ -212,7 +212,7 @@ export default function LoginPage() {
 
                 {debugOtp && (
                   <div className="w-full rounded-lg bg-teal-500/10 border border-teal-500/30 p-3 text-center text-xs animate-in fade-in zoom-in-95 duration-300">
-                    <p className="font-semibold text-teal-800 dark:text-teal-300">🛠️ Debug Verification Code</p>
+                    <p className="font-semibold text-teal-800 dark:text-teal-300">Debug Verification Code</p>
                     <p className="text-xl font-mono font-bold tracking-widest text-teal-700 dark:text-teal-300 my-1">
                       {debugOtp}
                     </p>
