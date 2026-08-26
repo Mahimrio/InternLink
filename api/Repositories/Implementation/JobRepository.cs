@@ -112,4 +112,45 @@ public class JobRepository : Repository<Job>, IJobRepository
             .Where(j => j.CompanyId == companyId)
             .ToListAsync(ct);
     }
+
+    public async Task<(IReadOnlyList<Job> Items, int TotalCount)> GetPagedByCompanyAsync(
+        Guid companyId, int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = Set
+            .Include(j => j.JobSkills)
+                .ThenInclude(js => js.Skill)
+            .AsNoTracking()
+            .Where(j => j.CompanyId == companyId);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var safePage = page < 1 ? 1 : page;
+        var safePageSize = pageSize < 1 ? 20 : (pageSize > 100 ? 100 : pageSize);
+
+        var items = await query
+            .OrderByDescending(j => j.DeadLine)
+            .ThenByDescending(j => j.Id)
+            .Skip((safePage - 1) * safePageSize)
+            .Take(safePageSize)
+            .ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
+    public async Task<Job?> GetTrackedByIdWithSkillsAsync(Guid jobId, CancellationToken ct = default)
+    {
+        return await Set
+            .Include(j => j.JobSkills)
+                .ThenInclude(js => js.Skill)
+            .FirstOrDefaultAsync(j => j.Id == jobId, ct);
+    }
+
+    public async Task<Job?> GetByIdWithSkillsAsync(Guid jobId, CancellationToken ct = default)
+    {
+        return await Set
+            .Include(j => j.JobSkills)
+                .ThenInclude(js => js.Skill)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(j => j.Id == jobId, ct);
+    }
 }

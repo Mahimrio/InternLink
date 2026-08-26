@@ -9,6 +9,10 @@ using InternLinkApi.Services.EmailSender;
 using InternLinkApi.Services.JobService;
 using InternLinkApi.Services.ProfileService;
 using InternLinkApi.Services.ResumeService;
+using InternLinkApi.Services.CompanyProfileService;
+using InternLinkApi.Services.CompanyJobService;
+using InternLinkApi.Services.StudentSkillService;
+using InternLinkApi.Services.AtsService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -104,12 +108,18 @@ builder.Services.AddScoped<IJobRepository, JobRepository>();
 builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 
-// ── Services ─────────────────────────────────────────────────────────
+// ── Services ────────────────────────────────────────────────
 builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IResumeService, ResumeService>();
+builder.Services.AddScoped<ICompanyProfileService, CompanyProfileService>();
+builder.Services.AddScoped<ICompanyJobService, CompanyJobService>();
+builder.Services.AddScoped<IStudentSkillService, StudentSkillService>();
+builder.Services.AddScoped<IAtsService, AtsService>();
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]

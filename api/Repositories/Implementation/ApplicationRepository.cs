@@ -70,4 +70,59 @@ public class ApplicationRepository : Repository<Application>, IApplicationReposi
             .OrderByDescending(a => a.SubmittedAt)
             .ToListAsync(ct);
     }
+
+    public async Task<(IReadOnlyList<Application> Items, int TotalCount)> GetCompanyApplicationsAsync(
+        Guid companyId, Guid? jobId, ApplicationStatus? status, int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = Set
+            .Include(a => a.Job)
+            .Include(a => a.Student)
+            .AsNoTracking()
+            .Where(a => a.Job.CompanyId == companyId);
+
+        if (jobId.HasValue)
+        {
+            query = query.Where(a => a.JobId == jobId.Value);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(a => a.ApplicationStatus == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(ct);
+
+        var safePage = page < 1 ? 1 : page;
+        var safePageSize = pageSize < 1 ? 20 : (pageSize > 100 ? 100 : pageSize);
+
+        var items = await query
+            .OrderByDescending(a => a.SubmittedAt)
+            .ThenByDescending(a => a.Id)
+            .Skip((safePage - 1) * safePageSize)
+            .Take(safePageSize)
+            .ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
+    public async Task<Application?> GetCompanyApplicationDetailAsync(
+        Guid companyId, Guid applicationId, CancellationToken ct = default)
+    {
+        return await Set
+            .Include(a => a.Job)
+            .Include(a => a.Student)
+            .Include(a => a.AttachedResume)
+            .Include(a => a.Interviews)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == applicationId && a.Job.CompanyId == companyId, ct);
+    }
+
+    public async Task<Application?> GetTrackedCompanyApplicationAsync(
+        Guid companyId, Guid applicationId, CancellationToken ct = default)
+    {
+        return await Set
+            .Include(a => a.Job)
+            .Include(a => a.Student)
+            .FirstOrDefaultAsync(a => a.Id == applicationId && a.Job.CompanyId == companyId, ct);
+    }
 }

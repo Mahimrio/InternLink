@@ -31,6 +31,31 @@ public static class JobMapper
         return jobs.Select(j => ToDto(j, appliedJobIds?.Contains(j.Id) ?? false)).ToList();
     }
 
+    public static CompanyJobDto ToCompanyDto(Job job)
+    {
+        return new CompanyJobDto
+        {
+            Id = job.Id,
+            Title = job.Title,
+            CoreDescription = job.CoreDescription,
+            SelectionCriteria = job.SelectionCriteria,
+            LocationType = job.LocationType.ToString(),
+            DeadLine = job.DeadLine,
+            IsApproved = job.IsApproved,
+            IsClosed = job.IsClosed,
+            RequiredSkills = job.JobSkills?.Select(js => new JobSkillDto
+            {
+                SkillName = js.Skill?.SkillName ?? string.Empty,
+                RequiredImportanceWeight = js.RequiredImportanceWeight,
+            }).ToList() ?? [],
+        };
+    }
+
+    public static List<CompanyJobDto> ToCompanyDtoList(IEnumerable<Job> jobs)
+    {
+        return jobs.Select(ToCompanyDto).ToList();
+    }
+
     public static ApplicationDto ToDto(Application application)
     {
         return new ApplicationDto
