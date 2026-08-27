@@ -91,7 +91,7 @@ Standing context for AI agents and contributors working in this monorepo. **This
 - **Performance:** page loads < 2s; APIs < 500ms p95 (AI calls excluded, those run async or via background job).
 - **Password hashing:** PBKDF2 / SHA256 via ASP.NET Core Identity defaults. Do not roll your own.
 - **Database queries:** EF Core / LINQ only — parameterized by construction. **Never raw SQL string interpolation.** If raw SQL is unavoidable, use `FromSqlInterpolated`.
-- **AI calls:** always `await` (never block a request thread), always wrapped in `try/catch` with graceful fallback (return cached / default / "AI unavailable" message). Every call is logged to `AIHistory` with **real token-usage numbers** (prompt tokens, completion tokens, total) — never estimates.
+- **AI calls:** always `await` (never block a request thread), always wrapped in `try/catch` with graceful fallback (return cached / default / "AI unavailable" message). Every call is logged to `AIHistory` with **real token-usage numbers** (prompt tokens, completion tokens, total) — never estimates. OpenAI has been selected as the primary LLM provider (using `OpenAiClient` implementing `ILlmClient`) because of its reliable structured output and straightforward token cost accounting.
 - **Money / cost fields:** `decimal` / `numeric`, never `float` / `double`. AI cost in `AIHistory.CostUsd` is `decimal(18,6)`.
 
 ## 7. Git conventions

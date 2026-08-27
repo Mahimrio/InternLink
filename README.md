@@ -57,6 +57,7 @@ Connects students, companies, counselors, and admins through a single platform w
 | **Storage** | Supabase Storage (S3-compatible) for resume PDFs | Supabase Cloud |
 | **Document Generation** | QuestPDF (In-memory streaming, Community license) | API in-memory |
 | **Email** | SMTP (MailHog / DevEmailSender for dev) | Docker / Smtp |
+| **AI Provider** | OpenAI (GPT-4o-mini via OpenAiClient) for reliable structured output | API integration |
 
 ---
 

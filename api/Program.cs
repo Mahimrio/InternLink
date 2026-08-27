@@ -14,6 +14,9 @@ using InternLinkApi.Services.CompanyJobService;
 using InternLinkApi.Services.StudentSkillService;
 using InternLinkApi.Services.AtsService;
 using InternLinkApi.Services.AdminService;
+using InternLinkApi.Services.CounselorAdvisingService;
+using InternLinkApi.Services.AIService;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -122,6 +125,7 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 builder.Services.AddScoped<IUserAdminRepository, UserAdminRepository>();
 builder.Services.AddScoped<IAdminAnalyticsRepository, AdminAnalyticsRepository>();
+builder.Services.AddScoped<ICounselorFeedbackRepository, CounselorFeedbackRepository>();
 
 // ── Services ────────────────────────────────────────────────
 builder.Services.AddScoped<IJobService, JobService>();
@@ -136,6 +140,16 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IAdminCompanyService, AdminCompanyService>();
 builder.Services.AddScoped<IAdminJobService, AdminJobService>();
 builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
+builder.Services.AddScoped<ICounselorAdvisingService, CounselorAdvisingService>();
+
+builder.Services.AddHttpClient<ILlmClient, OpenAiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/");
+    var apiKey = builder.Configuration["AiProvider:ApiKey"] 
+                 ?? throw new InvalidOperationException("AiProvider:ApiKey is not configured.");
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]
