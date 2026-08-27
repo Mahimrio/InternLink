@@ -255,5 +255,9 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
 
         builder.Entity<Application>()
             .HasIndex(a => a.ApplicationStatus);
+
+        builder.Entity<Application>()
+            .HasIndex(a => new { a.JobId, a.StudentId })
+            .IsUnique();
     }
 }

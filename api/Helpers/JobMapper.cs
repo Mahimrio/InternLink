@@ -1,12 +1,11 @@
 using InternLinkApi.DTOs;
 using InternLinkApi.Models;
-using InternLinkApi.Models.Enums;
 
 namespace InternLinkApi.Helpers;
 
 public static class JobMapper
 {
-    public static JobDto ToDto(Job job)
+    public static JobDto ToDto(Job job, bool hasApplied = false)
     {
         return new JobDto
         {
@@ -18,6 +17,7 @@ public static class JobMapper
             SelectionCriteria = job.SelectionCriteria,
             LocationType = job.LocationType.ToString(),
             DeadLine = job.DeadLine,
+            HasApplied = hasApplied,
             RequiredSkills = job.JobSkills?.Select(js => new JobSkillDto
             {
                 SkillName = js.Skill?.SkillName ?? string.Empty,
@@ -26,8 +26,52 @@ public static class JobMapper
         };
     }
 
-    public static List<JobDto> ToDtoList(IEnumerable<Job> jobs)
+    public static List<JobDto> ToDtoList(IEnumerable<Job> jobs, HashSet<Guid>? appliedJobIds = null)
     {
-        return jobs.Select(ToDto).ToList();
+        return jobs.Select(j => ToDto(j, appliedJobIds?.Contains(j.Id) ?? false)).ToList();
+    }
+
+    public static CompanyJobDto ToCompanyDto(Job job)
+    {
+        return new CompanyJobDto
+        {
+            Id = job.Id,
+            Title = job.Title,
+            CoreDescription = job.CoreDescription,
+            SelectionCriteria = job.SelectionCriteria,
+            LocationType = job.LocationType.ToString(),
+            DeadLine = job.DeadLine,
+            IsApproved = job.IsApproved,
+            IsClosed = job.IsClosed,
+            RequiredSkills = job.JobSkills?.Select(js => new JobSkillDto
+            {
+                SkillName = js.Skill?.SkillName ?? string.Empty,
+                RequiredImportanceWeight = js.RequiredImportanceWeight,
+            }).ToList() ?? [],
+        };
+    }
+
+    public static List<CompanyJobDto> ToCompanyDtoList(IEnumerable<Job> jobs)
+    {
+        return jobs.Select(ToCompanyDto).ToList();
+    }
+
+    public static ApplicationDto ToDto(Application application)
+    {
+        return new ApplicationDto
+        {
+            Id = application.Id,
+            JobId = application.JobId,
+            JobTitle = application.Job?.Title ?? string.Empty,
+            CompanyName = application.Job?.Company?.CompanyName ?? string.Empty,
+            ApplicationStatus = application.ApplicationStatus.ToString(),
+            SubmittedAt = application.SubmittedAt,
+            AttachedResumeId = application.AttachedResumeId,
+        };
+    }
+
+    public static List<ApplicationDto> ToDtoList(IEnumerable<Application> applications)
+    {
+        return applications.Select(ToDto).ToList();
     }
 }

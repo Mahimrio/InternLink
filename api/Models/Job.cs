@@ -11,6 +11,9 @@ public class Job
     public string SelectionCriteria { get; set; } = string.Empty;
     public LocationType LocationType { get; set; }
     public DateTimeOffset DeadLine { get; set; }
+
+    // Set by admin approval only. Company edits to an already-approved job do NOT reset this
+    // (see CompanyJobService.UpdateJobAsync); a stricter version could re-queue significant edits.
     public bool IsApproved { get; set; } = false;
     public bool IsClosed { get; set; } = false;
 

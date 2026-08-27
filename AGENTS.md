@@ -96,10 +96,19 @@ Standing context for AI agents and contributors working in this monorepo. **This
 
 ## 7. Git conventions
 
-- **Branches:** one feature per branch, prefixed: `feat/`, `fix/`, `chore/`, `docs/`, `ci/`, `test/`, `refactor/`, `style/`.
-- **Commit messages:** Conventional Commits — `type(scope): description`. Imperative mood, lowercase, no trailing period.
-  - Good: `feat(api): add job recommendation endpoint`
-  - Bad:  `Added Job Recommendation Endpoint.`
+- **Professional Branch Naming:** Always use standardized, lowercase, kebab-case branch names prefixed with type:
+  - Format: `<type>/<scope>-<short-description>`
+  - Prefixes: `feat/`, `fix/`, `chore/`, `docs/`, `ci/`, `test/`, `refactor/`, `style/`
+  - Examples: `feat/api-student-resume-builder`, `feat/ui-student-profile`, `fix/auth-otp-expiration`
+- **Professional Commit Messages:** Conventional Commits standard:
+  - Format: `type(scope): imperative description without trailing period`
+  - Good: `feat(student): implement profile and resume builder API with Supabase Storage`
+  - Bad:  `Added student profile & resume stuff.`
+- **Mandatory Suggestion & Confirmation Workflow:**
+  - AI agents **MUST ALWAYS suggest and propose** the exact professional branch name and commit message before creating a branch or making a commit.
+  - **Do NOT commit after each small change or incremental tweak.** Group related changes and only commit when a complete feature or prompt milestone is ready, or when the user explicitly requests a commit.
+  - **Never push to GitHub (`origin`) without the user's explicit permission.** Commits remain local until the user explicitly directs the agent to push.
+- **No AI Markers or Emojis:** Commit messages, PR titles, and PR descriptions must NEVER contain emojis, robot icons, or robotic AI boilerplate phrases. Write clean, human-crafted, professional software engineering descriptions.
 - **PR title = commit message** when there's one commit; otherwise summarize the branch.
 
 ## 8. Do not
@@ -111,6 +120,9 @@ Standing context for AI agents and contributors working in this monorepo. **This
 - Do not add business logic inside Next.js Route Handlers — BFF proxy/cookie handling only.
 - Do not use `any` in TypeScript without a `// TODO: <reason>` justification comment.
 - Do not catch exceptions and swallow them silently — log or rethrow; never an empty `catch {}` block.
+- Do not make automatic git commits after every small edit or tweak — only commit on completed milestones or when directed by the user.
+- Do not push commits to GitHub (`git push`) without explicit user permission.
+- Do not use emojis, robot icons, or robotic AI-style phrasing in commit messages, pull requests, code comments, or UI text.
 
 ## 9. When in doubt
 
@@ -133,7 +145,8 @@ If a later prompt's instructions seem to conflict with anything stated here, **f
   - **Animations:** Use staggered entry animations (`animate-in fade-in slide-in-from-bottom-X`). Use subtle pulsing/glowing colored orbs in the background of main pages (Landing, Auth) to add depth.
   - **Primary CTA Buttons:** Apply the custom `.btn-gradient-animate` class for a prominent, looping teal shimmer effect on major actions (Log In, Register, primary dashboard actions).
 - **Base UI Integration:**
-  - When replacing a Base UI `<Button>` component's underlying element with a Next.js `<Link>` (via `render={<Link href="..." />}`), you MUST pass `nativeButton={false}` to avoid React console errors about native button semantics on anchor tags.
+  - For **navigation**, do NOT route a link through the Base UI `<Button>` via `render={<Link/>}`. Base UI's button (`nativeButton={false}`) applies `role="button"` and its own click handling, which swallows the anchor's navigation — the element renders but clicking does nothing. Instead, style a real Next.js `<Link>` (or `<a>`) with the button classes: `<Link href="..." className={buttonVariants({ variant, size, className })}>`. Import `buttonVariants` from `@/components/ui/button`.
+  - Keep the Base UI `<Button>` for real button actions (`onClick`, form submit). When you genuinely need a Base UI primitive (e.g. `DialogClose`, `DropdownMenuTrigger`) to render as a `<Button>`, `render={<Button .../>}` is fine.
 - **Layout:**
   - Use `components/shared/page-container.tsx` (`<PageContainer>`) for standard content (max-w-7xl).
   - Header and footer use a wider edge-to-edge layout (`max-w-[1600px]`).
@@ -142,3 +155,34 @@ If a later prompt's instructions seem to conflict with anything stated here, **f
 
 Before final project submission, complete these steps:
 - **Remove `api/appsettings.Development.json` from git tracking** — it currently contains the Supabase DB connection string with credentials. Add it to `.gitignore` and run `git rm --cached api/appsettings.Development.json`. During development it stays tracked so teammates can pull it.
+
+## 12. UI/UX Pro Max Skill & Contributor Setup
+
+The repository includes the **`ui_ux_pro_max`** skill in [`.agents/skills/ui_ux_pro_max/SKILL.md`](.agents/skills/ui_ux_pro_max/SKILL.md) to enforce enterprise-grade design standards across all user interfaces.
+
+- **Automatic Workspace Discovery:** All AI agents working in this repository automatically discover and apply this skill from `.agents/skills/ui_ux_pro_max/SKILL.md`.
+- **Global Installation (Optional for all workspaces):**
+  ```bash
+  mkdir -p ~/.gemini/config/skills/ui_ux_pro_max
+  cp -r .agents/skills/ui_ux_pro_max/* ~/.gemini/config/skills/ui_ux_pro_max/
+  ```
+- **Guidelines Enforced:**
+  - Typography: Space Grotesk (`font-heading`) for headings & Inter (`font-sans`) for body.
+  - Colors: Deep Teal primary (`oklch(0.45 0.12 195)`), Warm Amber accent (`oklch(0.75 0.18 65)`).
+  - Micro-interactions: `.btn-gradient-animate` for major CTAs, staggered entry animations (`animate-in fade-in`), subtle hover elevations.
+  - Accessibility: WCAG AA contrast compliance and semantic HTML on all pages.
+
+## 13. Antigravity Awesome Skills Bundle
+
+To enhance your AI assistant with the complete catalog of curated development, refactoring, and domain skills:
+
+- **Install globally for Antigravity:**
+  ```bash
+  npx antigravity-awesome-skills --antigravity
+  ```
+- **Install in local project workspace (`.agents/skills`):**
+  ```bash
+  npx antigravity-awesome-skills --path .agents/skills
+  ```
+
+

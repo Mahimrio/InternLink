@@ -1,5 +1,8 @@
 import { RoleGuard } from "@/components/shared/role-guard";
 import { DashboardLayout, NavItem } from "@/components/shared/dashboard-layout";
+import { PageContainer } from "@/components/shared/page-container";
+import { CompanyProfileProvider } from "@/lib/company-context";
+import { VerificationBanner } from "@/components/company/verification-badge";
 import { LayoutDashboard, Building2, Briefcase, Users } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -12,9 +15,15 @@ const navItems: NavItem[] = [
 export default function CompanyLayout({ children }: { children: React.ReactNode }) {
   return (
     <RoleGuard allowedRole="Company">
-      <DashboardLayout navItems={navItems} roleName="Company">
-        {children}
-      </DashboardLayout>
+      <CompanyProfileProvider>
+        <DashboardLayout navItems={navItems} roleName="Company">
+          {/* Verification status stays visible on every Company-area page. */}
+          <PageContainer>
+            <VerificationBanner />
+          </PageContainer>
+          {children}
+        </DashboardLayout>
+      </CompanyProfileProvider>
     </RoleGuard>
   );
 }

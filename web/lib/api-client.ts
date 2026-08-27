@@ -4,14 +4,19 @@
 // client relies on the context providing the token via headers or args,
 // or being used server-side where Route Handlers act as the BFF.
 
-const getBaseUrl = () => {
+const getBaseUrl = (endpoint: string) => {
   // If running on the server side (e.g., inside a Route Handler proxying to backend)
   if (typeof window === "undefined") {
     return process.env.API_INTERNAL_BASE_URL || "http://localhost:5187";
   }
-  // If running on the client side, requests go to the BFF (Route Handlers)
-  // or relative paths if we want to call our own BFF.
-  return "";
+  
+  // If client-side and calling auth BFF route handlers
+  if (endpoint.startsWith("/api/auth")) {
+    return "";
+  }
+
+  // Client-side direct call to .NET API
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:5187";
 };
 
 type FetchOptions = RequestInit & {
@@ -24,7 +29,7 @@ export async function apiClient<T>(
 ): Promise<T> {
   const { token, headers: customHeaders, ...rest } = options;
 
-  const baseUrl = getBaseUrl();
+  const baseUrl = getBaseUrl(endpoint);
   const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
 
   const headers = new Headers(customHeaders);

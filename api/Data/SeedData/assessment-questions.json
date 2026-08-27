@@ -1,0 +1,1123 @@
+[
+  {
+    "questionId": "cs-q1",
+    "skillName": "C#",
+    "questionText": "What is the primary difference between a class and a struct in C#?",
+    "options": [
+      "Classes are reference types allocated on the managed heap, whereas structs are value types typically stored on the stack or inline",
+      "Structs support multiple inheritance while classes only support single inheritance",
+      "Classes cannot contain private constructors, but structs can",
+      "Structs are always immutable and cannot implement interfaces"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "In .NET, classes are reference types (stored on the heap and garbage-collected), while structs are value types (copied by value and stored on the stack or within containing types)."
+  },
+  {
+    "questionId": "cs-q2",
+    "skillName": "C#",
+    "questionText": "Which keyword is used in C# to ensure unmanaged resources are deterministically released by calling Dispose()?",
+    "options": [
+      "using",
+      "lock",
+      "fixed",
+      "checked"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The 'using' statement (or declaration) provides a deterministic mechanism for calling IDisposable.Dispose() as soon as execution leaves the block."
+  },
+  {
+    "questionId": "cs-q3",
+    "skillName": "C#",
+    "questionText": "In async/await programming in C#, what does 'ConfigureAwait(false)' accomplish in library code?",
+    "options": [
+      "It prevents deadlocks by not forcing continuation callbacks back onto the captured SynchronizationContext",
+      "It cancels the asynchronous task immediately if the thread pool is saturated",
+      "It forces the task to execute synchronously on the caller thread",
+      "It automatically retries failed HTTP requests"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "ConfigureAwait(false) configures the task awaiter to not marshal the continuation back to the original SynchronizationContext, avoiding synchronization overhead and potential deadlocks in non-UI code."
+  },
+  {
+    "questionId": "cs-q4",
+    "skillName": "C#",
+    "questionText": "What is the behavior of record types introduced in C# 9.0 regarding equality comparison?",
+    "options": [
+      "Records provide value-based equality comparison by default instead of reference equality",
+      "Records only compare object memory references unless Equals is manually overridden",
+      "Records do not support equality operators (== and !=)",
+      "Records use hashcode collision tables for equality"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "C# records automatically synthesize value-based equality contracts, comparing each property's value rather than reference identities."
+  },
+  {
+    "questionId": "cs-q5",
+    "skillName": "C#",
+    "questionText": "What does the 'yield return' statement do inside an iterator method returning IEnumerable<T>?",
+    "options": [
+      "It returns elements lazily one by one on demand without buffering the entire sequence in memory",
+      "It yields thread execution to the operating system scheduler",
+      "It allocates an unmanaged buffer on the native heap",
+      "It executes the entire enumeration in a background thread"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'yield return' enables deferred (lazy) execution, generating a state machine that evaluates and yields each element only when MoveNext() is invoked."
+  },
+
+  {
+    "questionId": "aspnet-q1",
+    "skillName": "ASP.NET Core",
+    "questionText": "What is the lifetime behavior of a service registered with 'builder.Services.AddScoped<T>()' in ASP.NET Core?",
+    "options": [
+      "A single instance is created per HTTP request and shared across all dependencies in that request scope",
+      "A new instance is instantiated every time the dependency is requested by any class",
+      "A single global instance is shared across the entire application lifetime",
+      "Instances are persisted in user session cookies"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Scoped services in ASP.NET Core are created once per client request scope and disposed automatically at the end of the request."
+  },
+  {
+    "questionId": "aspnet-q2",
+    "skillName": "ASP.NET Core",
+    "questionText": "In ASP.NET Core middleware pipelines, how is the execution order determined?",
+    "options": [
+      "By the sequence in which 'app.Use...' middleware components are registered in Program.cs",
+      "Alphabetically by the middleware class name",
+      "Middleware components execute randomly in parallel background threads",
+      "By explicit HTTP route attributes"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The order of middleware execution strictly follows the registration order in the application startup pipeline, forming a bidirectional request/response pipeline."
+  },
+  {
+    "questionId": "aspnet-q3",
+    "skillName": "ASP.NET Core",
+    "questionText": "Which filter or mechanism in ASP.NET Core is best suited for catching unhandled exceptions globally across all controllers?",
+    "options": [
+      "ExceptionHandlerMiddleware / UseExceptionHandler or IExceptionHandler (in .NET 8+)",
+      "ActionFilterAttribute on every controller action",
+      "Custom Javascript try/catch in the client",
+      "Database transaction savepoints"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "UseExceptionHandler middleware and .NET 8's IExceptionHandler provide centralized, global exception interception and formatted problem-detail responses."
+  },
+  {
+    "questionId": "aspnet-q4",
+    "skillName": "ASP.NET Core",
+    "questionText": "Why should ASP.NET Core Controllers depend on service/repository interfaces rather than injecting ApplicationDbContext directly?",
+    "options": [
+      "To enforce separation of concerns, encapsulate persistence logic, and facilitate unit testing through mocking",
+      "Because DbContext cannot be injected via dependency injection",
+      "Direct DbContext usage automatically crashes the Kestrel web server",
+      "To bypass SQL transaction safety"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Decoupling controllers from DbContext via service interfaces adheres to the Single Responsibility Principle and enables isolated unit testing without a live database."
+  },
+  {
+    "questionId": "aspnet-q5",
+    "skillName": "ASP.NET Core",
+    "questionText": "What HTTP status code is semantic for returning a RFC 7807 validation error response?",
+    "options": [
+      "400 Bad Request",
+      "401 Unauthorized",
+      "500 Internal Server Error",
+      "301 Moved Permanently"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "HTTP 400 Bad Request is the standard RFC status indicating that the client request body failed validation constraints."
+  },
+
+  {
+    "questionId": "sql-q1",
+    "skillName": "SQL",
+    "questionText": "What is the primary difference between WHERE and HAVING clauses in SQL?",
+    "options": [
+      "WHERE filters individual rows before grouping, while HAVING filters aggregated group results after GROUP BY",
+      "HAVING can only be used with primary key columns",
+      "WHERE is only supported in MySQL whereas HAVING is PostgreSQL specific",
+      "WHERE and HAVING are identical in execution and performance"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The WHERE clause filters individual rows before any aggregations occur; HAVING applies filtering criteria to the summarized groups produced by GROUP BY."
+  },
+  {
+    "questionId": "sql-q2",
+    "skillName": "SQL",
+    "questionText": "Which index type is best suited for equality and range queries on sorted sequential identifiers?",
+    "options": [
+      "B-Tree index",
+      "Hash index",
+      "Full-text inverted index",
+      "Spatial R-Tree index"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "B-Tree indexes maintain sorted tree structures, providing O(log N) lookup time for equality (=) as well as range comparisons (<, >, BETWEEN)."
+  },
+  {
+    "questionId": "sql-q3",
+    "skillName": "SQL",
+    "questionText": "What do ACID properties stand for in relational database transactions?",
+    "options": [
+      "Atomicity, Consistency, Isolation, Durability",
+      "Authentication, Concurrency, Integrity, Distribution",
+      "Aggregation, Clustering, Indexing, Decoupling",
+      "Asynchronous, Cacheable, Idempotent, Deterministic"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "ACID guarantees that database transactions are processed reliably: Atomicity (all-or-nothing), Consistency (rules enforced), Isolation (concurrency control), and Durability (persisted committed state)."
+  },
+  {
+    "questionId": "sql-q4",
+    "skillName": "SQL",
+    "questionText": "What SQL construct prevents SQL Injection attacks when querying with user-supplied parameters?",
+    "options": [
+      "Parameterized queries / Prepared statements",
+      "String concatenation with quotation escaping",
+      "Using SELECT * instead of explicit column names",
+      "Storing queries in browser localStorage"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Parameterized queries treat user input strictly as data parameters rather than executable SQL code, preventing SQL injection."
+  },
+  {
+    "questionId": "sql-q5",
+    "skillName": "SQL",
+    "questionText": "What is the result of an INNER JOIN between Table A and Table B?",
+    "options": [
+      "Only records that have matching join keys in both Table A and Table B",
+      "All records from Table A and only matching records from Table B",
+      "The Cartesian product of both tables regardless of join condition",
+      "All records from both tables with NULLs in non-matching columns"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "An INNER JOIN returns only the subset of rows where the join predicate evaluates to true in both participating tables."
+  },
+
+  {
+    "questionId": "docker-q1",
+    "skillName": "Docker",
+    "questionText": "In a multi-stage Dockerfile for an ASP.NET Core application, why do we use separate 'build' and 'runtime' stages?",
+    "options": [
+      "To produce a minimal, secure final image that contains only the runtime binaries without heavy SDK tools and source code",
+      "Because Docker cannot run compilations inside a single stage",
+      "To bypass image layer caching",
+      "To run the container on multiple operating systems simultaneously"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Multi-stage builds leave compiler SDKs and build dependencies behind in intermediate stages, yielding lightweight, production-hardened runtime containers."
+  },
+  {
+    "questionId": "docker-q2",
+    "skillName": "Docker",
+    "questionText": "What is the difference between the COPY and ADD instructions in a Dockerfile?",
+    "options": [
+      "COPY simply copies local files, whereas ADD additionally supports fetching remote URLs and auto-extracting tar archives",
+      "ADD is faster and COPY is deprecated",
+      "COPY only works for directories and ADD only works for individual files",
+      "There is no difference between ADD and COPY"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Best practice recommends COPY for straightforward file transfers; ADD includes extra behavior like tar extraction and remote URL downloads."
+  },
+  {
+    "questionId": "docker-q3",
+    "skillName": "Docker",
+    "questionText": "What happens when you run a container with the '-v my_volume:/data' flag?",
+    "options": [
+      "It mounts a named Docker volume to /data inside the container, preserving data beyond the container lifecycle",
+      "It limits container memory usage to 10% of host RAM",
+      "It exposes port /data to the host network",
+      "It runs the container in read-only mode"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Named volumes provide persistent storage decoupled from container lifecycles, enabling data survival across container restarts and rebuilds."
+  },
+  {
+    "questionId": "docker-q4",
+    "skillName": "Docker",
+    "questionText": "How does Docker leverage layer caching when building images from a Dockerfile?",
+    "options": [
+      "If a layer instruction and its input files have not changed since the last build, Docker reuses the cached layer",
+      "Docker invalidates all layers on every build by default",
+      "Layer caching only works for base alpine images",
+      "Docker only caches the final CMD instruction"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Docker evaluates commands sequentially and reuses previously built layers as long as the instructions and corresponding source files remain unchanged."
+  },
+  {
+    "questionId": "docker-q5",
+    "skillName": "Docker",
+    "questionText": "What Docker command displays live CPU, memory, and network I/O usage streams for running containers?",
+    "options": [
+      "docker stats",
+      "docker top",
+      "docker inspect",
+      "docker logs -f"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'docker stats' provides a real-time live data stream of resource utilization metrics for all active containers."
+  },
+
+  {
+    "questionId": "ef-q1",
+    "skillName": "Entity Framework Core",
+    "questionText": "What is the 'N+1 query problem' in Entity Framework Core, and how is it resolved?",
+    "options": [
+      "Executing 1 query for a parent entity followed by N queries for related child records; resolved using eager loading with '.Include()'",
+      "Running N migrations simultaneously causing database locks; resolved with rollback scripts",
+      "A query syntax error when table column count exceeds 100",
+      "A connection pool starvation issue resolved by increasing max pool size"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The N+1 problem occurs when child collections are lazily evaluated in a loop; using .Include() performs an efficient JOIN or batched query in a single round-trip."
+  },
+  {
+    "questionId": "ef-q2",
+    "skillName": "Entity Framework Core",
+    "questionText": "When should 'AsNoTracking()' be applied to a LINQ query in EF Core?",
+    "options": [
+      "In read-only queries where returned entities will not be modified or updated in the current DbContext",
+      "Only when deleting records from the database",
+      "When using EF Core in desktop applications exclusively",
+      "Before calling SaveChangesAsync on modified entities"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'AsNoTracking()' disables change tracking snapshots, significantly boosting read performance and reducing memory allocation for read-only operations."
+  },
+  {
+    "questionId": "ef-q3",
+    "skillName": "Entity Framework Core",
+    "questionText": "How does EF Core handle PostgreSQL case-insensitive search idiomatic in Npgsql?",
+    "options": [
+      "Using EF.Functions.ILike(column, pattern)",
+      "Using column.ToLower().Contains(keyword) which translates to UPPER/LOWER scans",
+      "By disabling PostgreSQL collation rules globally",
+      "By loading all rows to memory and applying regex"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "In Npgsql/PostgreSQL, EF.Functions.ILike translates directly to the native PostgreSQL 'ILIKE' operator for index-accelerated case-insensitive pattern matching."
+  },
+  {
+    "questionId": "ef-q4",
+    "skillName": "Entity Framework Core",
+    "questionText": "What is the purpose of an EF Core Migration?",
+    "options": [
+      "To incrementally update database schemas in sync with entity model changes while preserving existing data",
+      "To move data from SQL Server to NoSQL databases automatically",
+      "To compile C# classes into WebAssembly",
+      "To create temporary backup files on local hard drives"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "EF Core migrations generate structured C# and SQL migration scripts that evolve database schemas over time without losing existing records."
+  },
+  {
+    "questionId": "ef-q5",
+    "skillName": "Entity Framework Core",
+    "questionText": "What exception is thrown by EF Core when a unique constraint or foreign key index is violated during SaveChangesAsync?",
+    "options": [
+      "DbUpdateException",
+      "InvalidCastException",
+      "NullReferenceException",
+      "StackOverflowException"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "EF Core wraps underlying database constraint and unique index violations into a DbUpdateException."
+  },
+
+  {
+    "questionId": "rest-q1",
+    "skillName": "REST API Design",
+    "questionText": "Which HTTP method is defined by RFC 7231 as idempotent and used to replace an entire resource representation?",
+    "options": [
+      "PUT",
+      "POST",
+      "PATCH",
+      "CONNECT"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "PUT is idempotent and replaces the target resource entirely. Repeated identical PUT requests produce the exact same server state."
+  },
+  {
+    "questionId": "rest-q2",
+    "skillName": "REST API Design",
+    "questionText": "What is the correct HTTP status code to return when a resource is successfully created via a POST request?",
+    "options": [
+      "201 Created",
+      "200 OK",
+      "204 No Content",
+      "202 Accepted"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "HTTP 201 Created signifies that the request succeeded and led to the creation of a new resource, typically accompanied by a Location header."
+  },
+  {
+    "questionId": "rest-q3",
+    "skillName": "REST API Design",
+    "questionText": "What HTTP status code should be returned when a client attempts to create a duplicate record that violates a unique constraint?",
+    "options": [
+      "409 Conflict",
+      "404 Not Found",
+      "500 Internal Server Error",
+      "400 Bad Request"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "HTTP 409 Conflict indicates that the request could not be processed because of a conflict in the target resource's current state (such as duplicate entries)."
+  },
+  {
+    "questionId": "rest-q4",
+    "skillName": "REST API Design",
+    "questionText": "In RESTful URL naming conventions, which format represents best practices for querying sub-resources?",
+    "options": [
+      "GET /api/companies/{companyId}/jobs",
+      "GET /api/getCompanyJobs?id={companyId}",
+      "POST /api/jobs/queryByCompanyId",
+      "GET /api/exec_sql_jobs_for_company"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "REST URI design uses plural nouns and nested resource hierarchies (e.g., /api/companies/{id}/jobs) rather than RPC verb actions."
+  },
+  {
+    "questionId": "rest-q5",
+    "skillName": "REST API Design",
+    "questionText": "What header is used in CORS preflight responses to specify allowed HTTP methods?",
+    "options": [
+      "Access-Control-Allow-Methods",
+      "Access-Control-Allow-Origin",
+      "Content-Security-Policy",
+      "X-Requested-With"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The 'Access-Control-Allow-Methods' response header specifies the HTTP methods permitted when accessing a resource in response to a preflight OPTIONS request."
+  },
+
+  {
+    "questionId": "react-q1",
+    "skillName": "React",
+    "questionText": "Why must hooks like useState and useEffect be called at the top level of a React component?",
+    "options": [
+      "To ensure that React preserves state order and associations across multiple renders based on fixed call indices",
+      "Because Javascript does not allow functions inside loops",
+      "To prevent CSS style recalculations",
+      "Because hooks only work when compiled with Babel"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "React relies on the call order of hooks across renders to match hook state arrays internally; conditional or looped hook calls break this invariant."
+  },
+  {
+    "questionId": "react-q2",
+    "skillName": "React",
+    "questionText": "What is the primary purpose of the 'key' prop when rendering lists of elements in React?",
+    "options": [
+      "To give each list item a stable identity so React's reconciliation engine can efficiently track additions, removals, and reorders",
+      "To automatically apply CSS styling to the element",
+      "To bind click event listeners to the DOM node",
+      "To encrypt data passed to child components"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Keys provide unique identities to elements in a collection, allowing the Virtual DOM reconciliation algorithm to identify which items have changed or moved."
+  },
+  {
+    "questionId": "react-q3",
+    "skillName": "React",
+    "questionText": "What does React.useCallback(fn, deps) do?",
+    "options": [
+      "Returns a memoized version of the callback function that only changes if one of the dependencies has changed",
+      "Executes the function in a Web Worker thread",
+      "Runs the callback synchronously before DOM mutation",
+      "Caches the HTTP response of an API call"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "useCallback caches a function instance across renders to maintain referential equality, preventing unnecessary re-renders in memoized child components."
+  },
+  {
+    "questionId": "react-q4",
+    "skillName": "React",
+    "questionText": "What is the recommended solution in React 18+ to avoid calling setState directly in the synchronous body of useEffect?",
+    "options": [
+      "Compute derived values during render or trigger state updates inside asynchronous event handlers and loaders",
+      "Wrap setState in a while(true) loop",
+      "Force component reload with window.location.reload()",
+      "Convert the component to a class component"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Direct synchronous setState in useEffect causes cascading re-renders. Best practice is deriving state directly during render or setting state inside async callbacks."
+  },
+  {
+    "questionId": "react-q5",
+    "skillName": "React",
+    "questionText": "How does React Suspense coordinate asynchronous UI rendering?",
+    "options": [
+      "It catches promises thrown by child components and renders a fallback UI until the promise resolves",
+      "It blocks the main browser thread until all images are downloaded",
+      "It compiles client React code to WebAssembly",
+      "It disables JavaScript execution in modern browsers"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Suspense displays a designated fallback (such as a skeleton loader) while underlying data-fetching promises or code-split components are resolving."
+  },
+
+  {
+    "questionId": "ts-q1",
+    "skillName": "TypeScript",
+    "questionText": "What is the difference between 'unknown' and 'any' types in TypeScript?",
+    "options": [
+      "'unknown' is type-safe: you cannot perform arbitrary operations on it without type narrowing or assertions, whereas 'any' disables type checking entirely",
+      "'any' requires runtime type validation whereas 'unknown' does not",
+      "'unknown' can only represent primitive numbers and strings",
+      "There is no functional difference in strict mode"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'unknown' represents any value safely, enforcing type checks or guards before properties or methods can be accessed, whereas 'any' opts out of type safety."
+  },
+  {
+    "questionId": "ts-q2",
+    "skillName": "TypeScript",
+    "questionText": "What does the utility type 'Partial<T>' do in TypeScript?",
+    "options": [
+      "Constructs a type with all properties of T set to optional (?)",
+      "Constructs a type with all properties of T set to readonly",
+      "Selects only a subset of properties matching a given union",
+      "Removes null and undefined from type T"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Partial<T> transforms all properties of interface or type T into optional fields ({ [P in keyof T]?: T[P] })."
+  },
+  {
+    "questionId": "ts-q3",
+    "skillName": "TypeScript",
+    "questionText": "What is a Discriminated Union in TypeScript?",
+    "options": [
+      "A pattern where a union of object types shares a common literal property used as a discriminator tag for exhaustive type narrowing",
+      "A union of generic types that only allows boolean values",
+      "An enum that compiles to a bitmask",
+      "A database join construct in TypeORM"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Discriminated unions use a shared literal property (like 'type' or 'status') allowing TypeScript to narrow down the specific type in switch/if statements."
+  },
+  {
+    "questionId": "ts-q4",
+    "skillName": "TypeScript",
+    "questionText": "What does the 'readonly' modifier on array types (ReadonlyArray<T> or readonly T[]) prevent?",
+    "options": [
+      "Mutating methods like push(), pop(), splice(), and direct index assignment",
+      "Iterating through the array with map() or forEach()",
+      "Reading elements by numeric index",
+      "Passing the array as an argument to functions"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "ReadonlyArray<T> prevents all mutating operations (push, sort, splice, index assignment), guaranteeing immutability at compile-time."
+  },
+  {
+    "questionId": "ts-q5",
+    "skillName": "TypeScript",
+    "questionText": "What does the 'satisfies' operator introduced in TypeScript 4.9 achieve?",
+    "options": [
+      "Validates that an expression matches a type contract without widening or losing its specific inferred literal type",
+      "Forces a runtime conversion of JSON to classes",
+      "Automatically generates unit test assertions",
+      "Replaces all interfaces with type aliases"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'satisfies' checks type conformance while preserving the exact literal types and auto-complete properties of the assigned object."
+  },
+
+  {
+    "questionId": "tw-q1",
+    "skillName": "Tailwind CSS",
+    "questionText": "In Tailwind CSS v4, how are CSS custom properties and color variables configured?",
+    "options": [
+      "Directly in CSS using the @theme directive and native CSS variables (e.g., --color-*), deprecating tailwind.config.js",
+      "Through an XML schema file in public directory",
+      "Exclusively using inline style tags on every HTML element",
+      "Using a Python preprocessor script"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Tailwind CSS v4 is CSS-first, defining design tokens, color scales, and font stacks using the modern @theme directive inside CSS files."
+  },
+  {
+    "questionId": "tw-q2",
+    "skillName": "Tailwind CSS",
+    "questionText": "What Tailwind class combination creates a standard frosted glassmorphism effect?",
+    "options": [
+      "bg-white/80 backdrop-blur-md border border-white/20",
+      "opacity-50 blur-lg shadow-none",
+      "filter-none bg-transparent contrast-200",
+      "invert grayscale-0 saturate-150"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Combining semi-transparent alpha background (bg-white/80), backdrop-blur-md, and subtle border highlights produces modern glassmorphic surfaces."
+  },
+  {
+    "questionId": "tw-q3",
+    "skillName": "Tailwind CSS",
+    "questionText": "How does Tailwind handle responsive breakpoints such as 'md:grid-cols-2'?",
+    "options": [
+      "Using CSS min-width media queries targeting predefined screen widths (e.g. @media (min-width: 768px))",
+      "By detecting mobile devices via JavaScript navigator.userAgent",
+      "By resizing the browser window through WebSockets",
+      "Using max-width queries from desktop down to mobile"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Tailwind employs a mobile-first approach where unqualified utilities apply to all screens and breakpoint prefixes (sm:, md:, lg:) apply min-width media queries."
+  },
+  {
+    "questionId": "tw-q4",
+    "skillName": "Tailwind CSS",
+    "questionText": "What is the utility class in Tailwind to hide content visually while keeping it accessible to screen readers?",
+    "options": [
+      "sr-only",
+      "hidden",
+      "invisible",
+      "opacity-0"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'sr-only' applies visually hidden CSS styles that clip the element out of view while remaining readable to assistive technologies."
+  },
+  {
+    "questionId": "tw-q5",
+    "skillName": "Tailwind CSS",
+    "questionText": "Which Tailwind modifier targets the state when a user navigates to an element via keyboard tab focus?",
+    "options": [
+      "focus-visible:",
+      "hover:",
+      "active:",
+      "target:"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'focus-visible:' applies styles only when the element receives focus through keyboard navigation or assistive tech, avoiding outline rings on mouse clicks."
+  },
+
+  {
+    "questionId": "next-q1",
+    "skillName": "Next.js",
+    "questionText": "In Next.js App Router, what is the default rendering paradigm for components inside the app directory?",
+    "options": [
+      "React Server Components (RSC)",
+      "Client Components with hydrateRoot",
+      "Static HTML generation without JavaScript",
+      "Legacy Pages Router getServerSideProps"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "In the App Router, all components inside the app directory are React Server Components by default unless marked with 'use client'."
+  },
+  {
+    "questionId": "next-q2",
+    "skillName": "Next.js",
+    "questionText": "Why must client components using 'useSearchParams()' in Next.js App Router be wrapped in a React <Suspense> boundary?",
+    "options": [
+      "To prevent client-side bailout and ensure optimal static page optimization during build time",
+      "Because Next.js cannot render query strings without WebSocket connections",
+      "To encrypt search parameters on the network wire",
+      "To disable browser navigation history"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Wrapping useSearchParams() in a Suspense boundary allows Next.js to render the surrounding layout statically while hydrating query-dependent components on the client."
+  },
+  {
+    "questionId": "next-q3",
+    "skillName": "Next.js",
+    "questionText": "What is the primary role of Route Handlers (app/api/.../route.ts) in a Backend-for-Frontend (BFF) architecture?",
+    "options": [
+      "To securely manage httpOnly auth cookies, attach access tokens, and proxy requests without exposing raw tokens to client-side JS",
+      "To replace the primary .NET/Java database backend entirely",
+      "To render server-side HTML email templates",
+      "To run heavy machine learning model training"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "BFF Route Handlers act as a secure proxy: holding httpOnly session/refresh cookies and communicating with backend APIs without leaking credentials to client JS."
+  },
+  {
+    "questionId": "next-q4",
+    "skillName": "Next.js",
+    "questionText": "What special file in Next.js App Router renders an automatic fallback UI when an unexpected runtime error occurs in a subtree?",
+    "options": [
+      "error.tsx",
+      "loading.tsx",
+      "not-found.tsx",
+      "layout.tsx"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "error.tsx defines a React Error Boundary for a route segment, automatically rendering fallback UI when uncaught exceptions occur."
+  },
+  {
+    "questionId": "next-q5",
+    "skillName": "Next.js",
+    "questionText": "How do you navigate programmatically without causing a full browser page refresh in Next.js App Router?",
+    "options": [
+      "useRouter().push('/path') from 'next/navigation'",
+      "window.location.href = '/path'",
+      "document.location.assign('/path')",
+      "history.go('/path')"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The useRouter hook from 'next/navigation' provides client-side, SPA-style routing transitions without full browser document reloads."
+  },
+
+  {
+    "questionId": "cicd-q1",
+    "skillName": "CI/CD",
+    "questionText": "What is the primary goal of Continuous Integration (CI)?",
+    "options": [
+      "Automatically build and run automated tests on every code commit to detect integration errors early",
+      "Deploy code directly to production without testing",
+      "Replace version control systems like Git",
+      "Manually review pull requests via email"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Continuous Integration automates compiling code, linting, and executing unit/integration tests on every branch commit to catch bugs early."
+  },
+  {
+    "questionId": "cicd-q2",
+    "skillName": "CI/CD",
+    "questionText": "In a GitHub Actions workflow, what is the purpose of storing API keys and connection strings in 'GitHub Actions Secrets'?",
+    "options": [
+      "To prevent sensitive credentials from being committed to the public Git repository history while injecting them securely at runtime",
+      "To encrypt the entire Git branch history",
+      "To make secrets visible to all repository visitors",
+      "To speed up Docker container builds"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "GitHub Secrets inject encrypted environment variables during workflow execution without hardcoding credentials in source files."
+  },
+  {
+    "questionId": "cicd-q3",
+    "skillName": "CI/CD",
+    "questionText": "What is the difference between a Blue-Green deployment and a Canary deployment?",
+    "options": [
+      "Blue-Green switches 100% traffic between two identical environments; Canary routes a small percentage of traffic to the new version incrementally",
+      "Canary requires two physical servers whereas Blue-Green only uses virtual machines",
+      "Blue-Green is only for databases while Canary is for frontend code",
+      "Canary deployments do not allow rollbacks"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Blue-Green maintains two identical staging/prod environments for instant cutover; Canary routes a fraction (e.g. 5%) of real user traffic to monitor error rates before full rollout."
+  },
+  {
+    "questionId": "cicd-q4",
+    "skillName": "CI/CD",
+    "questionText": "What is the purpose of caching dependencies (e.g., .nuget/packages or node_modules) in CI/CD pipeline steps?",
+    "options": [
+      "To accelerate workflow execution times by avoiding redundant network package downloads",
+      "To guarantee that packages are never updated",
+      "To bypass code linting steps",
+      "To compile C# assemblies into static binaries"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Action caches preserve package directories between pipeline runs, cutting build times significantly by avoiding fresh downloads."
+  },
+  {
+    "questionId": "cicd-q5",
+    "skillName": "CI/CD",
+    "questionText": "What is a 'linter' step in a continuous integration pipeline designed to enforce?",
+    "options": [
+      "Static code quality, syntax standards, and prevention of common programming bugs before compilation",
+      "Dynamic memory leak analysis in production",
+      "Automated database index re-indexing",
+      "Cloud infrastructure bill forecasting"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Linters parse source files statically against formatting and syntactic rules, failing pipeline builds if violations are detected."
+  },
+
+  {
+    "questionId": "aws-q1",
+    "skillName": "AWS",
+    "questionText": "What is the core difference between AWS S3 and AWS EBS (Elastic Block Store)?",
+    "options": [
+      "S3 is a scalable object storage service accessible via HTTP REST APIs; EBS is persistent block storage attached to EC2 instances like a hard drive",
+      "EBS is serverless database storage while S3 is compute infrastructure",
+      "S3 can only store up to 5GB of total files across an account",
+      "EBS is globally distributed and accessible from web browsers directly"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "S3 stores unstructured objects (files, images) via HTTP endpoints; EBS provides low-latency block-level storage mounted directly to EC2 compute virtual machines."
+  },
+  {
+    "questionId": "aws-q2",
+    "skillName": "AWS",
+    "questionText": "What AWS service allows executing backend code in response to events without provisioning or managing servers?",
+    "options": [
+      "AWS Lambda",
+      "Amazon EC2",
+      "Amazon RDS",
+      "AWS Route 53"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "AWS Lambda is a serverless FaaS (Function-as-a-Service) compute platform that executes code automatically in response to triggers and scales on demand."
+  },
+  {
+    "questionId": "aws-q3",
+    "skillName": "AWS",
+    "questionText": "What is the principle of least privilege in AWS IAM (Identity and Access Management)?",
+    "options": [
+      "Granting users and services only the minimum permissions necessary to perform their required tasks",
+      "Giving all developer accounts AdministratorAccess for convenience",
+      "Disabling multi-factor authentication on root accounts",
+      "Allowing unrestricted public read/write access to all S3 buckets"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Least privilege mandates granting only the specific actions, resources, and conditions required for an identity's operational scope, minimizing security attack surfaces."
+  },
+  {
+    "questionId": "aws-q4",
+    "skillName": "AWS",
+    "questionText": "What AWS service acts as a managed relational database offering automated backups, failover, and scaling?",
+    "options": [
+      "Amazon RDS (Relational Database Service)",
+      "Amazon DynamoDB",
+      "Amazon S3 Glacier",
+      "Amazon Simple Queue Service (SQS)"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Amazon RDS provides managed provisioning, patching, backup, and high-availability Multi-AZ replication for PostgreSQL, MySQL, and SQL Server engines."
+  },
+  {
+    "questionId": "aws-q5",
+    "skillName": "AWS",
+    "questionText": "What is Amazon CloudFront primarily used for?",
+    "options": [
+      "Global Content Delivery Network (CDN) caching static and dynamic web content at edge locations worldwide",
+      "Managing DNS records and domain registrations",
+      "Container orchestration across hybrid clouds",
+      "Running scheduled cron jobs"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "CloudFront caches assets across globally distributed edge server points of presence (PoPs), accelerating content delivery and reducing server origin load."
+  },
+
+  {
+    "questionId": "k8s-q1",
+    "skillName": "Kubernetes",
+    "questionText": "What is the smallest deployable compute unit in Kubernetes?",
+    "options": [
+      "Pod",
+      "Container",
+      "Node",
+      "Cluster"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A Pod encapsulates one or more co-located containers sharing network namespaces and storage volumes, representing the fundamental unit of deployment in Kubernetes."
+  },
+  {
+    "questionId": "k8s-q2",
+    "skillName": "Kubernetes",
+    "questionText": "What Kubernetes resource object manages declarative state, rolling updates, and self-healing replicas of Pods?",
+    "options": [
+      "Deployment",
+      "Service",
+      "ConfigMap",
+      "Ingress"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Deployments provide declarative updates for Pods and ReplicaSets, managing rolling deployments, rollbacks, and automatic replica pod replacement."
+  },
+  {
+    "questionId": "k8s-q3",
+    "skillName": "Kubernetes",
+    "questionText": "What is the role of a Kubernetes 'Service' of type ClusterIP?",
+    "options": [
+      "Provides a stable internal IP address and DNS name to load-balance traffic across a dynamic set of matching Pods",
+      "Exposes pods directly to the public internet on host ports",
+      "Stores sensitive API keys and secrets",
+      "Automates TLS certificate generation"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "ClusterIP is the default Service type, providing a stable internal endpoint with internal DNS resolution and load-balancing across ephemeral pod endpoints."
+  },
+  {
+    "questionId": "k8s-q4",
+    "skillName": "Kubernetes",
+    "questionText": "What is the difference between a 'livenessProbe' and a 'readinessProbe' in Kubernetes?",
+    "options": [
+      "livenessProbe determines if a container needs to be restarted; readinessProbe determines if a container is ready to accept network traffic",
+      "livenessProbe is for memory leaks and readinessProbe is for CPU spikes",
+      "readinessProbe stops the container if it fails 3 times",
+      "There is no difference between the two probes"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Failing a liveness probe causes Kubernetes to kill and restart the container; failing a readiness probe temporarily removes the Pod from Service load balancers without restarting it."
+  },
+  {
+    "questionId": "k8s-q5",
+    "skillName": "Kubernetes",
+    "questionText": "What tool or resource is standard for managing Kubernetes application configuration as parameterizable charts?",
+    "options": [
+      "Helm",
+      "Docker Compose",
+      "Terraform Provider for Azure",
+      "Webpack"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Helm is the package manager for Kubernetes, using Charts to define, version, template, and deploy complex Kubernetes applications."
+  },
+
+  {
+    "questionId": "pg-q1",
+    "skillName": "PostgreSQL",
+    "questionText": "What is the benefit of the 'jsonb' data type in PostgreSQL compared to plain 'json'?",
+    "options": [
+      "jsonb stores decomposed binary JSON, enabling indexing with GIN indexes and faster querying at the expense of slight write conversion overhead",
+      "jsonb only accepts numbers and cannot store nested arrays",
+      "plain json is encrypted while jsonb is plain text",
+      "jsonb has a maximum file size limit of 1KB"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "jsonb parses JSON into an optimized binary format on write, supporting fast key extraction, operators (@>, ->>), and generalized inverted (GIN) indexing."
+  },
+  {
+    "questionId": "pg-q2",
+    "skillName": "PostgreSQL",
+    "questionText": "What does the VACUUM command do in PostgreSQL?",
+    "options": [
+      "Reclaims storage occupied by dead tuples created by UPDATE and DELETE operations and updates query planner statistics",
+      "Deletes all database tables permanently",
+      "Compresses database backup dump files",
+      "Resets user passwords"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "PostgreSQL Multi-Version Concurrency Control (MVCC) leaves dead tuple versions on updates/deletes; VACUUM reclaims this space and prevents transaction ID wraparound."
+  },
+  {
+    "questionId": "pg-q3",
+    "skillName": "PostgreSQL",
+    "questionText": "What PostgreSQL clause allows an INSERT statement to handle primary key or unique index conflicts gracefully (UPSERT)?",
+    "options": [
+      "ON CONFLICT DO UPDATE / DO NOTHING",
+      "MERGE INTO WITHOUT KEY",
+      "TRY INSERT CATCH",
+      "IGNORE CONSTRAINT"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'ON CONFLICT (key) DO UPDATE SET ...' (or DO NOTHING) provides atomic upsert capability in PostgreSQL without raising constraint violation exceptions."
+  },
+  {
+    "questionId": "pg-q4",
+    "skillName": "PostgreSQL",
+    "questionText": "What command reveals the execution plan and execution cost generated by PostgreSQL's query optimizer?",
+    "options": [
+      "EXPLAIN ANALYZE",
+      "SHOW PLAN",
+      "DEBUG QUERY",
+      "TRACE COST"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "'EXPLAIN ANALYZE' runs the query, providing the actual execution time, scan types (Sequential vs Index scan), and cost estimates for each plan node."
+  },
+  {
+    "questionId": "pg-q5",
+    "skillName": "PostgreSQL",
+    "questionText": "What is the purpose of PostgreSQL Connection Pooling (e.g. via PgBouncer)?",
+    "options": [
+      "To manage and reuse a pool of database backend processes, avoiding the heavy memory and fork overhead of opening new PostgreSQL connections per request",
+      "To convert SQL queries into GraphQL",
+      "To replicate data to Redis automatically",
+      "To bypass user password authentication"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "PostgreSQL uses a process-per-connection model. Connection pooling reuses backend processes, preventing resource exhaustion during high concurrent load."
+  },
+
+  {
+    "questionId": "comm-q1",
+    "skillName": "Communication",
+    "questionText": "When reporting a critical production incident to both engineering teammates and executive leadership, what is the best communication practice?",
+    "options": [
+      "Provide a concise executive summary with impact and mitigation first (BLUF - Bottom Line Up Front), followed by detailed technical logs for engineers",
+      "Send raw unformatted database stack traces to executive leaders",
+      "Wait 48 hours before mentioning any production downtime",
+      "Blame individual junior developers in public Slack channels"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Effective technical communication structures high-impact updates with clear summaries for business stakeholders while providing technical depth for the response team."
+  },
+  {
+    "questionId": "comm-q2",
+    "skillName": "Communication",
+    "questionText": "In asynchronous remote software teams, what makes a pull request description high quality?",
+    "options": [
+      "Clear context on the problem, what changed and why, screenshots/recordings for UI, and testing steps for reviewers",
+      "Writing 'Fixes stuff' as the title and leaving description blank",
+      "Including 50 emojis and no code context",
+      "Linking directly to uncommitted local files"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "A great PR description gives reviewers all necessary architectural reasoning, reproducible verification steps, and visual evidence to review efficiently."
+  },
+  {
+    "questionId": "comm-q3",
+    "skillName": "Communication",
+    "questionText": "What is active listening during a software design review meeting?",
+    "options": [
+      "Focusing attentively on the speaker, acknowledging trade-offs, asking clarifying questions, and synthesizing points before responding",
+      "Interrupting the speaker immediately whenever you disagree",
+      "Silently browsing social media while someone presents",
+      "Dismissing all architectural concerns without explanation"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Active listening ensures all perspectives, edge cases, and architectural constraints are thoroughly understood before converging on a technical design."
+  },
+  {
+    "questionId": "comm-q4",
+    "skillName": "Communication",
+    "questionText": "What is the purpose of an Architectural Decision Record (ADR)?",
+    "options": [
+      "To capture an important architectural decision, the problem context, considered alternatives, and consequences for future maintainers",
+      "To record developer attendance for daily standups",
+      "To calculate annual employee salary bonuses",
+      "To list all database connection passwords"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "ADRs serve as persistent historical documentation explaining why certain architectural patterns were chosen and what trade-offs were accepted."
+  },
+  {
+    "questionId": "comm-q5",
+    "skillName": "Communication",
+    "questionText": "When writing API documentation for third-party developer integration, which element is most essential?",
+    "options": [
+      "Accurate request/response schemas, authentication requirements, realistic example payloads, and clear HTTP error codes",
+      "Lengthy philosophical essays on software design",
+      "Obfuscating parameter names for secrecy",
+      "Omitting error status code descriptions"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Developer documentation succeeds when it provides concrete schema contracts, interactive examples, authentication guides, and troubleshooting steps."
+  },
+
+  {
+    "questionId": "team-q1",
+    "skillName": "Teamwork",
+    "questionText": "In code reviews, what constitutes constructive and empathetic feedback?",
+    "options": [
+      "Focusing on the code and architectural patterns rather than criticizing the author personally, providing rationale and suggestions",
+      "Rejecting pull requests without explaining why",
+      "Insisting that only your personal code style is acceptable",
+      "Approving all PRs without reviewing the diff"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Constructive code reviews build team trust by evaluating technical merit objectively, explaining the 'why' behind suggestions, and maintaining a respectful tone."
+  },
+  {
+    "questionId": "team-q2",
+    "skillName": "Teamwork",
+    "questionText": "How should a software team approach a 'blameless post-mortem' following a service outage?",
+    "options": [
+      "Investigate systemic failure modes, process gaps, and tooling improvements without assigning individual blame",
+      "Identify the developer who committed the bug and punish them",
+      "Delete incident monitoring logs to hide the outage",
+      "Cancel all future code deployments permanently"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Blameless post-mortems assume team members acted with good intentions; they focus on fortifying automated tests, monitoring, and processes to prevent recurrence."
+  },
+  {
+    "questionId": "team-q3",
+    "skillName": "Teamwork",
+    "questionText": "What is the primary purpose of a Daily Standup in Agile workflows?",
+    "options": [
+      "To synchronize daily progress, identify blockers, and coordinate collaboration across team members",
+      "For managers to conduct micro-management performance evaluations",
+      "To debate 2-hour architecture designs",
+      "To assign completely new project scopes daily"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Daily standups are brief alignment meetings focused on what was done, what is planned next, and identifying blockers requiring teammate assistance."
+  },
+  {
+    "questionId": "team-q4",
+    "skillName": "Teamwork",
+    "questionText": "What is the benefit of Pair Programming in an engineering team?",
+    "options": [
+      "Continuous code review, shared knowledge of the codebase, fewer bugs, and rapid cross-skilling between engineers",
+      "Halving developer salaries",
+      "Eliminating the need for automated unit tests",
+      "Ensuring no developer can take vacation"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Pair programming fosters immediate feedback, reduces structural defects, disseminates domain knowledge, and accelerates onboarding."
+  },
+  {
+    "questionId": "team-q5",
+    "skillName": "Teamwork",
+    "questionText": "When working on a shared Git repository with multiple team members, how can you minimize merge conflicts?",
+    "options": [
+      "Create small, focused feature branches, pull main/master frequently, and merge short-lived branches promptly",
+      "Work on a single massive branch for 6 months without pulling changes",
+      "Force-push (git push -f) directly to the main branch daily",
+      "Disable Git branching entirely"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Short-lived branches and frequent rebasing/integration against the main trunk keep divergence minimal and make conflicts trivial to resolve."
+  },
+
+  {
+    "questionId": "ps-q1",
+    "skillName": "Problem Solving",
+    "questionText": "When encountering a performance bottleneck in an API endpoint, what is the first systematic troubleshooting step?",
+    "options": [
+      "Profile and measure with metrics/APM tools (e.g. database query latency, CPU/memory profiling) to locate the bottleneck before optimizing",
+      "Immediately rewrite the entire backend in a different programming language",
+      "Guess where the issue is and start deleting database tables",
+      "Restart the server every 10 minutes"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Premature optimization is a major anti-pattern; measuring real profiling data with APM/tracing tools reveals the true constraint before touching code."
+  },
+  {
+    "questionId": "ps-q2",
+    "skillName": "Problem Solving",
+    "questionText": "What does the 'Rubber Duck Debugging' technique entail?",
+    "options": [
+      "Explaining your code and logic line-by-line in plain language to an inanimate object to identify flawed assumptions",
+      "Placing plastic ducks inside server hardware to detect vibration",
+      "Using AI to automatically replace all code",
+      "A stress testing tool for Kubernetes clusters"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Explaining the code step-by-step out loud forces you to re-evaluate underlying assumptions, often revealing logical inconsistencies immediately."
+  },
+  {
+    "questionId": "ps-q3",
+    "skillName": "Problem Solving",
+    "questionText": "What is the concept of 'Divide and Conquer' in algorithmic problem solving?",
+    "options": [
+      "Breaking a complex problem into smaller sub-problems, solving each recursively, and combining the results (e.g. Merge Sort)",
+      "Assigning all bugs to junior team members",
+      "Splitting a single server into two physical machines",
+      "Writing code without any comments or documentation"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Divide and Conquer breaks down problems into independent subproblems of the same type, solves them recursively, and combines their solutions."
+  },
+  {
+    "questionId": "ps-q4",
+    "skillName": "Problem Solving",
+    "questionText": "When diagnosing a flaky test that fails intermittently in CI, what is the best strategy?",
+    "options": [
+      "Isolate external dependencies (time, random seeds, network I/O, shared test database state) and make test execution deterministic",
+      "Delete the test so CI always passes green",
+      "Configure CI to retry 20 times until it accidentally passes",
+      "Ignore test failures if local machines pass"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "Flaky tests usually stem from asynchronous race conditions, shared mutable state, or non-deterministic inputs; isolating and mocking non-deterministic factors fixes root causes."
+  },
+  {
+    "questionId": "ps-q5",
+    "skillName": "Problem Solving",
+    "questionText": "What does the 5 Whys technique help engineering teams achieve during root cause analysis?",
+    "options": [
+      "Iteratively asking 'Why?' to peel away superficial symptoms and uncover the fundamental underlying cause of an issue",
+      "Creating 5 alternative pull requests for the same feature",
+      "Limiting code reviews to 5 comments maximum",
+      "Deploying updates 5 times a day"
+    ],
+    "correctOptionIndex": 0,
+    "explanation": "The 5 Whys methodology drills down through successive layers of causation to identify the fundamental systemic issue rather than treating superficial symptoms."
+  }
+]

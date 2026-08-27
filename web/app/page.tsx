@@ -18,8 +18,9 @@ import {
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/shared/page-container";
 import { Reveal } from "@/components/shared/reveal";
 
@@ -127,13 +128,25 @@ export default function Home() {
                 How it works
               </Link>
             </div>
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex hover:bg-primary/5 transition-colors" render={<Link href="/login" />} nativeButton={false}>
+            <Link
+              href="/login"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                "hidden sm:inline-flex hover:bg-primary/5 transition-colors"
+              )}
+            >
               Log in
-            </Button>
-            <Button size="sm" className="btn-gradient-animate group shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" render={<Link href="/register" />} nativeButton={false}>
+            </Link>
+            <Link
+              href="/register"
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "btn-gradient-animate group shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+              )}
+            >
               Get Started
               <ArrowRight data-icon="inline-end" className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Button>
+            </Link>
           </nav>
         </div>
       </header>
@@ -167,14 +180,26 @@ export default function Home() {
 
           {/* CTAs */}
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-[backwards] mt-12 flex w-full flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
-            <Button size="lg" className="btn-gradient-animate h-14 gap-2 rounded-full px-8 text-base shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/25" render={<Link href="/register?role=Student" />} nativeButton={false}>
+            <Link
+              href="/register?role=Student"
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "btn-gradient-animate h-14 gap-2 rounded-full px-8 text-base shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/25"
+              )}
+            >
               <GraduationCap className="size-5" />
               I&apos;m a Student
-            </Button>
-            <Button variant="outline" size="lg" className="h-14 gap-2 rounded-full border-border/60 bg-background/50 backdrop-blur-sm px-8 text-base shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-muted/80 hover:shadow-md" render={<Link href="/register?role=Company" />} nativeButton={false}>
+            </Link>
+            <Link
+              href="/register?role=Company"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "lg" }),
+                "group h-14 gap-2 rounded-full border-border/60 bg-background/50 backdrop-blur-sm px-8 text-base shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-muted/80 hover:shadow-md"
+              )}
+            >
               <Briefcase className="size-5 text-muted-foreground transition-colors group-hover:text-foreground" />
               I&apos;m Hiring
-            </Button>
+            </Link>
           </div>
 
           {/* Platform facts */}
@@ -415,10 +440,16 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Button className="btn-gradient-animate mt-8 h-11 gap-2 rounded-full px-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" render={<Link href="/register?role=Student" />} nativeButton={false}>
+                <Link
+                  href="/register?role=Student"
+                  className={cn(
+                    buttonVariants(),
+                    "btn-gradient-animate mt-8 h-11 gap-2 rounded-full px-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  )}
+                >
                   Create student account
                   <ArrowRight className="size-4" />
-                </Button>
+                </Link>
                 </div>
               </Reveal>
 
@@ -440,10 +471,16 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Button variant="outline" className="mt-8 h-11 gap-2 rounded-full px-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" render={<Link href="/register?role=Company" />} nativeButton={false}>
+                <Link
+                  href="/register?role=Company"
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "mt-8 h-11 gap-2 rounded-full px-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  )}
+                >
                   Start hiring
                   <ArrowRight className="size-4" />
-                </Button>
+                </Link>
                 </div>
               </Reveal>
             </div>
@@ -471,13 +508,25 @@ export default function Home() {
                 the internship.
               </p>
               <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Button size="lg" variant="secondary" className="h-12 gap-2 rounded-full px-8 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg" render={<Link href="/register" />} nativeButton={false}>
+                <Link
+                  href="/register"
+                  className={cn(
+                    buttonVariants({ variant: "secondary", size: "lg" }),
+                    "h-12 gap-2 rounded-full px-8 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                  )}
+                >
                   Get started free
                   <ArrowRight className="size-4" />
-                </Button>
-                <Button size="lg" variant="ghost" className="h-12 rounded-full px-8 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground" render={<Link href="/login" />} nativeButton={false}>
+                </Link>
+                <Link
+                  href="/login"
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "lg" }),
+                    "h-12 rounded-full px-8 text-primary-foreground hover:bg-white/10 hover:text-primary-foreground"
+                  )}
+                >
                   Log in
-                </Button>
+                </Link>
               </div>
               </div>
             </Reveal>
