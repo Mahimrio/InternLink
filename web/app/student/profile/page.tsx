@@ -10,7 +10,9 @@ import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import { PageContainer } from "@/components/shared/page-container";
 import { VerifiedSkillBadge } from "@/components/shared/verified-skill-badge";
+import { AdvisingNotesList, CounselorFeedbackItem } from "@/components/shared/advising-notes-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +30,8 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
-  Award
+  Award,
+  MessageSquare
 } from "lucide-react";
 
 interface ProfileDto {
@@ -57,6 +60,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function StudentProfilePage() {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
   const [profile, setProfile] = useState<ProfileDto | null>(null);
+  const [advisingNotes, setAdvisingNotes] = useState<CounselorFeedbackItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -90,22 +94,28 @@ export default function StudentProfilePage() {
     }
 
     let isMounted = true;
-    async function fetchProfile() {
+    async function fetchData() {
       try {
-        const data = await apiClient<ProfileDto>("/api/student/profile", {
-          token: accessToken,
-        });
+        setIsLoading(true);
+        const [profileData, notesData] = await Promise.all([
+          apiClient<ProfileDto>("/api/student/profile", { token: accessToken }),
+          apiClient<CounselorFeedbackItem[]>("/api/student/advising-notes", {
+            token: accessToken,
+          }).catch(() => [] as CounselorFeedbackItem[]),
+        ]);
+
         if (!isMounted) return;
 
-        setProfile(data);
+        setProfile(profileData);
+        setAdvisingNotes(notesData || []);
         reset({
-          firstName: data.firstName || "",
-          lastName: data.lastName || "",
-          cgpa: data.cgpa || 0,
-          department: data.department || "",
-          biography: data.biography || "",
-          interests: data.interests || "",
-          institutionalId: data.institutionalId || "",
+          firstName: profileData.firstName || "",
+          lastName: profileData.lastName || "",
+          cgpa: profileData.cgpa || 0,
+          department: profileData.department || "",
+          biography: profileData.biography || "",
+          interests: profileData.interests || "",
+          institutionalId: profileData.institutionalId || "",
         });
       } catch (err: unknown) {
         if (!isMounted) return;
@@ -118,7 +128,7 @@ export default function StudentProfilePage() {
       }
     }
 
-    fetchProfile();
+    fetchData();
 
     return () => {
       isMounted = false;
@@ -167,10 +177,10 @@ export default function StudentProfilePage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 className="font-heading text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Student Profile
+            Student Profile & Advising
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your verified academic profile, skill endorsements, and professional biography.
+            Manage your verified academic profile, skill endorsements, and view counselor advising notes.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -265,139 +275,181 @@ export default function StudentProfilePage() {
           </Card>
         </div>
 
-        {/* Right Column: Editable Profile Form */}
+        {/* Right Column: Tabbed Workspace for Profile Edit & Advising Notes */}
         <div className="lg:col-span-2">
-          <Card className="border-border/70 shadow-sm">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <User className="size-5 text-teal-600" />
-                <CardTitle className="font-heading text-xl">Profile Details</CardTitle>
-              </div>
-              <CardDescription>
-                Update your personal information and biography to showcase your background to prospective employers.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      placeholder="e.g. Tariq"
-                      {...register("firstName")}
-                      className={errors.firstName ? "border-destructive focus-visible:ring-destructive" : ""}
-                    />
-                    {errors.firstName && (
-                      <p className="text-xs text-destructive">{errors.firstName.message}</p>
-                    )}
-                  </div>
+          <Tabs defaultValue="profile" className="space-y-6">
+            <TabsList className="grid grid-cols-2 max-w-sm h-10 p-1 bg-slate-100 dark:bg-slate-800/70 border border-border/60 rounded-lg">
+              <TabsTrigger
+                value="profile"
+                className="flex items-center gap-1.5 text-xs font-semibold data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-300 shadow-2xs"
+              >
+                <User className="size-3.5" /> Edit Profile
+              </TabsTrigger>
+              <TabsTrigger
+                value="advising"
+                className="flex items-center gap-1.5 text-xs font-semibold data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-300 shadow-2xs"
+              >
+                <MessageSquare className="size-3.5" /> Advising Notes ({advisingNotes.length})
+              </TabsTrigger>
+            </TabsList>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      placeholder="e.g. Ahmed"
-                      {...register("lastName")}
-                      className={errors.lastName ? "border-destructive focus-visible:ring-destructive" : ""}
-                    />
-                    {errors.lastName && (
-                      <p className="text-xs text-destructive">{errors.lastName.message}</p>
-                    )}
+            {/* Profile Tab */}
+            <TabsContent value="profile" className="animate-in fade-in duration-300">
+              <Card className="border-border/70 shadow-sm">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <User className="size-5 text-teal-600" />
+                    <CardTitle className="font-heading text-xl">Profile Details</CardTitle>
                   </div>
-                </div>
+                  <CardDescription>
+                    Update your personal information and biography to showcase your background to prospective employers.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input
+                          id="firstName"
+                          placeholder="e.g. Tariq"
+                          {...register("firstName")}
+                          className={errors.firstName ? "border-destructive focus-visible:ring-destructive" : ""}
+                        />
+                        {errors.firstName && (
+                          <p className="text-xs text-destructive">{errors.firstName.message}</p>
+                        )}
+                      </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department / Program</Label>
-                    <div className="relative">
-                      <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                      <Input
-                        id="department"
-                        className="pl-9"
-                        placeholder="e.g. Computer Science & Engineering"
-                        {...register("department")}
-                      />
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input
+                          id="lastName"
+                          placeholder="e.g. Ahmed"
+                          {...register("lastName")}
+                          className={errors.lastName ? "border-destructive focus-visible:ring-destructive" : ""}
+                        />
+                        {errors.lastName && (
+                          <p className="text-xs text-destructive">{errors.lastName.message}</p>
+                        )}
+                      </div>
                     </div>
-                    {errors.department && (
-                      <p className="text-xs text-destructive">{errors.department.message}</p>
-                    )}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="cgpa">CGPA (Scale 0.00 - 4.00)</Label>
-                    <Input
-                      id="cgpa"
-                      type="number"
-                      step="0.01"
-                      min="0.00"
-                      max="4.00"
-                      {...register("cgpa", { valueAsNumber: true })}
-                      className={errors.cgpa ? "border-destructive focus-visible:ring-destructive" : ""}
-                    />
-                    {errors.cgpa && (
-                      <p className="text-xs text-destructive">{errors.cgpa.message}</p>
-                    )}
-                  </div>
-                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="department">Department / Program</Label>
+                        <div className="relative">
+                          <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                          <Input
+                            id="department"
+                            className="pl-9"
+                            placeholder="e.g. Computer Science & Engineering"
+                            {...register("department")}
+                          />
+                        </div>
+                        {errors.department && (
+                          <p className="text-xs text-destructive">{errors.department.message}</p>
+                        )}
+                      </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="interests">Interests & Specializations</Label>
-                  <div className="relative">
-                    <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input
-                      id="interests"
-                      className="pl-9"
-                      placeholder="e.g. Distributed Systems, Cloud Architecture, Next.js, AI Engineering"
-                      {...register("interests")}
-                    />
-                  </div>
-                  {errors.interests && (
-                    <p className="text-xs text-destructive">{errors.interests.message}</p>
-                  )}
-                </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="cgpa">CGPA (Scale 0.00 - 4.00)</Label>
+                        <Input
+                          id="cgpa"
+                          type="number"
+                          step="0.01"
+                          min="0.00"
+                          max="4.00"
+                          {...register("cgpa", { valueAsNumber: true })}
+                          className={errors.cgpa ? "border-destructive focus-visible:ring-destructive" : ""}
+                        />
+                        {errors.cgpa && (
+                          <p className="text-xs text-destructive">{errors.cgpa.message}</p>
+                        )}
+                      </div>
+                    </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="biography">Professional Biography</Label>
-                    <span className={`text-xs ${bioValue.length > 2000 ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
-                      {bioValue.length} / 2000
-                    </span>
+                    <div className="space-y-2">
+                      <Label htmlFor="interests">Interests & Specializations</Label>
+                      <div className="relative">
+                        <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                        <Input
+                          id="interests"
+                          className="pl-9"
+                          placeholder="e.g. Distributed Systems, Cloud Architecture, Next.js, AI Engineering"
+                          {...register("interests")}
+                        />
+                      </div>
+                      {errors.interests && (
+                        <p className="text-xs text-destructive">{errors.interests.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="biography">Professional Biography</Label>
+                        <span className={`text-xs ${bioValue.length > 2000 ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
+                          {bioValue.length} / 2000
+                        </span>
+                      </div>
+                      <Textarea
+                        id="biography"
+                        rows={5}
+                        placeholder="Write a concise overview of your technical background, career goals, and relevant projects..."
+                        {...register("biography")}
+                        className={errors.biography ? "border-destructive focus-visible:ring-destructive" : ""}
+                      />
+                      {errors.biography && (
+                        <p className="text-xs text-destructive">{errors.biography.message}</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-end pt-2">
+                      <Button
+                        type="submit"
+                        disabled={isSaving || !isDirty}
+                        className="bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white shadow-sm min-w-[140px]"
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="mr-2 size-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="mr-2 size-4" />
+                            Save Profile
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Advising Notes Tab */}
+            <TabsContent value="advising" className="space-y-4 animate-in fade-in duration-300">
+              <Card className="border-border/70 shadow-sm">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="size-5 text-teal-600" />
+                    <CardTitle className="font-heading text-xl">Counselor Advising Notes</CardTitle>
                   </div>
-                  <Textarea
-                    id="biography"
-                    rows={5}
-                    placeholder="Write a concise overview of your technical background, career goals, and relevant projects..."
-                    {...register("biography")}
-                    className={errors.biography ? "border-destructive focus-visible:ring-destructive" : ""}
+                  <CardDescription>
+                    Guidance, feedback, and action items provided by university career counselors during advising sessions.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AdvisingNotesList
+                    notes={advisingNotes}
+                    emptyTitle="No Advising Notes Yet"
+                    emptyMessage="You have not had any recorded counseling sessions yet. Reach out to a career counselor to schedule an appointment."
                   />
-                  {errors.biography && (
-                    <p className="text-xs text-destructive">{errors.biography.message}</p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-end pt-2">
-                  <Button
-                    type="submit"
-                    disabled={isSaving || !isDirty}
-                    className="bg-gradient-to-r from-teal-600 to-teal-700 btn-gradient-animate text-white shadow-sm min-w-[140px]"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="mr-2 size-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 size-4" />
-                        Save Profile
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </PageContainer>
