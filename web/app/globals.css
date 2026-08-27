@@ -223,3 +223,25 @@
   background-size: 250% 250%;
   animation: gradient-shift 8s ease-in-out infinite;
 }
+
+/* Gentle vertical drift for floating hero cards */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float-y 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-y 7s ease-in-out 1.8s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-delayed,
+  .btn-gradient-animate {
+    animation: none;
+  }
+}
