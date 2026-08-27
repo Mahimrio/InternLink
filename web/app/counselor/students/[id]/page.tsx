@@ -30,13 +30,11 @@ import {
   MessageSquare,
   Send,
   Loader2,
-  Calendar,
   Lock,
   User,
   ShieldCheck,
   BookOpen,
   Sparkles,
-  ExternalLink,
   Eye,
   Edit3
 } from "lucide-react";

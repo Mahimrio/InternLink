@@ -27,7 +27,6 @@ import {
   ChevronRight,
   ArrowUpDown,
   X,
-  Sparkles,
   BookOpen
 } from "lucide-react";
 import { toast } from "sonner";
