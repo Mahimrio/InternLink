@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Briefcase, LogOut, Menu, X } from "lucide-react";
 
 import { apiClient } from "@/lib/api-client";
@@ -75,7 +76,6 @@ export function DashboardLayout({ children, navItems, roleName }: DashboardLayou
           {mobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
         </button>
       </div>
-
       {/* Sidebar (Desktop + Mobile Drawer) */}
       <aside
         className={cn(
@@ -166,6 +166,7 @@ export function DashboardLayout({ children, navItems, roleName }: DashboardLayou
 
           {/* Desktop Right Actions & Professional Profile Card */}
           <div className="flex items-center gap-3.5">
+            <ThemeToggle />
             {/* Quick Action Button */}
             {roleName.toLowerCase() === "student" && (
               <Link href="/student/resumes/builder">
@@ -208,8 +209,16 @@ export function DashboardLayout({ children, navItems, roleName }: DashboardLayou
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-10">
-          {children}
+        <div className="relative flex-1 overflow-auto p-4 md:p-6 lg:p-10">
+          {/* Ambient depth */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute top-[-15%] right-[-5%] h-96 w-96 rounded-full bg-primary/5 blur-[110px]" />
+            <div className="absolute top-[30%] left-[-10%] h-80 w-80 rounded-full bg-amber-500/5 blur-[100px]" />
+          </div>
+          {/* Keyed on pathname so every route change replays the entrance */}
+          <div key={pathname} className="relative animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {children}
+          </div>
         </div>
       </main>
       

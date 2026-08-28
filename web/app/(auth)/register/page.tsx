@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Mirror backend DTO + confirm password (client-only)
@@ -123,23 +124,28 @@ function RegisterFormContent() {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden p-4 py-12">
       {/* Animated gradient background */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-teal-50 via-white to-amber-50/50" />
-      <div className="fixed top-[-20%] left-[-10%] -z-10 h-[500px] w-[500px] rounded-full bg-teal-200/30 blur-[100px] animate-pulse" />
-      <div className="fixed bottom-[-20%] right-[-10%] -z-10 h-[400px] w-[400px] rounded-full bg-amber-200/30 blur-[100px] animate-pulse [animation-delay:2s]" />
-      <div className="fixed top-[60%] left-[30%] -z-10 h-[350px] w-[350px] rounded-full bg-teal-100/20 blur-[80px] animate-pulse [animation-delay:3s]" />
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-teal-50 via-white to-amber-50/50 dark:from-teal-950/40 dark:via-background dark:to-amber-950/20" />
+      <div className="fixed top-[-20%] left-[-10%] -z-10 h-[500px] w-[500px] rounded-full bg-teal-200/30 dark:bg-teal-500/10 blur-[100px] animate-pulse" />
+      <div className="fixed bottom-[-20%] right-[-10%] -z-10 h-[400px] w-[400px] rounded-full bg-amber-200/30 dark:bg-amber-500/10 blur-[100px] animate-pulse [animation-delay:2s]" />
+      <div className="fixed top-[60%] left-[30%] -z-10 h-[350px] w-[350px] rounded-full bg-teal-100/20 dark:bg-teal-400/5 blur-[80px] animate-pulse [animation-delay:3s]" />
+
+      {/* Theme toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
 
       {/* Logo */}
       <div className="mb-8 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
         <div className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-600 to-teal-700 shadow-lg shadow-teal-500/25 transition-transform duration-300 hover:scale-110">
           <Briefcase className="size-7 text-white" />
         </div>
-        <span className="font-heading text-2xl font-bold tracking-tight bg-gradient-to-r from-teal-700 to-teal-500 bg-clip-text text-transparent">
+        <span className="font-heading text-2xl font-bold tracking-tight bg-gradient-to-r from-teal-700 to-teal-500 dark:from-teal-300 dark:to-teal-500 bg-clip-text text-transparent">
           InternLink
         </span>
       </div>
 
       {/* Card */}
-      <Card className="w-full max-w-md border-border/40 bg-white/80 shadow-xl shadow-teal-900/5 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-6 duration-700 [animation-delay:150ms]">
+      <Card className="w-full max-w-md border-border/40 bg-white/80 dark:bg-card/80 shadow-xl shadow-teal-900/5 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-6 duration-700 [animation-delay:150ms]">
         <CardHeader className="space-y-1 pb-4">
           <div className="flex items-center gap-2">
             <User className="size-5 text-teal-600" />

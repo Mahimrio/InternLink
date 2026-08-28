@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/shared/page-container";
 import { Reveal } from "@/components/shared/reveal";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 const features = [
   {
@@ -128,6 +129,7 @@ export default function Home() {
                 How it works
               </Link>
             </div>
+            <ThemeToggle />
             <Link
               href="/login"
               className={cn(
