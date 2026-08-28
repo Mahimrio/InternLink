@@ -9,6 +9,9 @@ public static class DbSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext db, UserManager<User> userManager, RoleManager<Role> roleManager)
     {
+        // Counselors have no self-registration path, so ensure the test account exists even on already-seeded DBs.
+        await EnsureCounselorUserAsync(userManager, roleManager);
+
         // Idempotency guard: if companies already exist, refresh seed job deadlines if expired and return.
         if (await db.Companies.AnyAsync())
         {
@@ -342,5 +345,37 @@ public static class DbSeeder
         }
 
         Console.WriteLine("INFO: Database seeding complete.");
+    }
+
+    private static async Task EnsureCounselorUserAsync(UserManager<User> userManager, RoleManager<Role> roleManager)
+    {
+        var counselorRole = await roleManager.FindByNameAsync("Counselor");
+        if (counselorRole is null)
+        {
+            counselorRole = new Role { Name = "Counselor", NormalizedName = "COUNSELOR" };
+            await roleManager.CreateAsync(counselorRole);
+            Console.WriteLine("INFO: Seeded role 'Counselor'.");
+        }
+
+        const string counselorEmail = "counselor@internlink.test";
+        if (await userManager.FindByEmailAsync(counselorEmail) is not null) return;
+
+        var counselorUser = new User
+        {
+            UserName = counselorEmail,
+            Email = counselorEmail,
+            EmailConfirmed = true,
+            CreatedAt = DateTimeOffset.UtcNow,
+            IsActive = true,
+            RoleId = counselorRole.Id
+        };
+        var result = await userManager.CreateAsync(counselorUser, "Counselor@123");
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            throw new InvalidOperationException($"Failed to create counselor user: {errors}");
+        }
+        await userManager.AddToRoleAsync(counselorUser, "Counselor");
+        Console.WriteLine($"INFO: Seeded counselor user '{counselorEmail}'.");
     }
 }

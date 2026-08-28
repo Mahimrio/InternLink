@@ -14,6 +14,8 @@ using InternLinkApi.Services.CompanyJobService;
 using InternLinkApi.Services.StudentSkillService;
 using InternLinkApi.Services.AtsService;
 using InternLinkApi.Services.AdminService;
+using InternLinkApi.Services.AssessmentService;
+using InternLinkApi.Services.CounselorAdvisingService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -122,6 +124,7 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 builder.Services.AddScoped<IUserAdminRepository, UserAdminRepository>();
 builder.Services.AddScoped<IAdminAnalyticsRepository, AdminAnalyticsRepository>();
+builder.Services.AddScoped<ICounselorFeedbackRepository, CounselorFeedbackRepository>();
 
 // ── Services ────────────────────────────────────────────────
 builder.Services.AddScoped<IJobService, JobService>();
@@ -136,6 +139,10 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IAdminCompanyService, AdminCompanyService>();
 builder.Services.AddScoped<IAdminJobService, AdminJobService>();
 builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
+builder.Services.AddScoped<IAssessmentQuestionBankService, AssessmentQuestionBankService>();
+builder.Services.AddScoped<IAssessmentSessionService, AssessmentSessionService>();
+builder.Services.AddScoped<IAssessmentService, AssessmentService>();
+builder.Services.AddScoped<ICounselorAdvisingService, CounselorAdvisingService>();
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]
