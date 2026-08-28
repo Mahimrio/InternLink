@@ -92,6 +92,7 @@ Standing context for AI agents and contributors working in this monorepo. **This
 - **Password hashing:** PBKDF2 / SHA256 via ASP.NET Core Identity defaults. Do not roll your own.
 - **Database queries:** EF Core / LINQ only — parameterized by construction. **Never raw SQL string interpolation.** If raw SQL is unavoidable, use `FromSqlInterpolated`.
 - **AI calls:** always `await` (never block a request thread), always wrapped in `try/catch` with graceful fallback (return cached / default / "AI unavailable" message). Every call is logged to `AIHistory` with **real token-usage numbers** (prompt tokens, completion tokens, total) — never estimates.
+- **AI provider:** Google Gemini (`gemini-3.6-flash`) is the primary LLM — chosen for its free tier (no billing needed for an academic project) and reliable structured output. All AI features MUST route through `ILlmClient` (`Services/AIService/GeminiClient`), never call a provider API directly. Config: `AiProvider__ApiKey` / `AiProvider__Model` — never a literal key in source. Provider failures surface as typed `AiServiceException`; callers must catch it and degrade gracefully.
 - **Money / cost fields:** `decimal` / `numeric`, never `float` / `double`. AI cost in `AIHistory.CostUsd` is `decimal(18,6)`.
 
 ## 7. Git conventions
