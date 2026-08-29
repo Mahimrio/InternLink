@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState, useTransition, useCallback } from "react";
+import React, { Suspense, useEffect, useMemo, useState, useTransition, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -54,6 +54,17 @@ interface PagedResult<T> {
   pageSize: number;
 }
 
+interface RecommendationInfo {
+  matchPercentage: number;
+  reason: string;
+}
+
+interface JobRecommendationDto {
+  job: JobDto;
+  matchPercentage: number;
+  reason: string;
+}
+
 /* ────────────────────────── Helpers ───────────────────────────────── */
 
 function formatRelativeDeadline(deadlineStr: string): { text: string; isUrgent: boolean } {
@@ -96,6 +107,14 @@ function getLocationBadgeStyle(locationType: string) {
   }
 }
 
+function getMatchBadgeStyle(pct: number) {
+  if (pct >= 75)
+    return "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800";
+  if (pct >= 50)
+    return "bg-amber-50 text-amber-800 border-amber-200/60 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800";
+  return "bg-slate-100 text-slate-600 border-slate-200/60 dark:bg-slate-800/80 dark:text-slate-400 dark:border-slate-700";
+}
+
 /* ───────────────────── Inner Content Component ─────────────────────── */
 
 function JobDiscoveryContent() {
@@ -118,6 +137,31 @@ function JobDiscoveryContent() {
 
   const [pagedData, setPagedData] = useState<PagedResult<JobDto> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [showRecommended, setShowRecommended] = useState(false);
+  const [recommendations, setRecommendations] = useState<Map<string, RecommendationInfo> | null>(null);
+  // Loading is derived, not stored: recs are "loading" whenever the toggle is on but nothing arrived yet.
+  const isLoadingRecs = showRecommended && recommendations === null;
+
+  // The recommendation call is slower than the job list (AI-ranked) — fetch it
+  // separately so badges resolve in place instead of blocking the list render.
+  useEffect(() => {
+    if (!showRecommended || !accessToken || recommendations !== null) return;
+    let isMounted = true;
+    apiClient<JobRecommendationDto[]>("/api/student/jobs/recommended", { token: accessToken })
+      .then((items) => {
+        if (!isMounted) return;
+        setRecommendations(
+          new Map(items.map((r) => [r.job.id, { matchPercentage: r.matchPercentage, reason: r.reason }]))
+        );
+      })
+      .catch(() => {
+        if (isMounted) setRecommendations(new Map());
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [showRecommended, accessToken, recommendations]);
 
   // Sync state to URL search parameters
   const updateUrlParams = useCallback(
@@ -179,6 +223,16 @@ function JobDiscoveryContent() {
   };
 
   const totalPages = pagedData ? Math.ceil(pagedData.totalCount / pagedData.pageSize) : 1;
+
+  // With recommendations active, ranked jobs float to the top, sorted by match percentage.
+  const displayItems = useMemo(() => {
+    if (!pagedData) return [];
+    if (!showRecommended || !recommendations) return pagedData.items;
+    return [...pagedData.items].sort(
+      (a, b) =>
+        (recommendations.get(b.id)?.matchPercentage ?? -1) - (recommendations.get(a.id)?.matchPercentage ?? -1)
+    );
+  }, [pagedData, showRecommended, recommendations]);
 
   return (
     <PageContainer className="py-8 space-y-7">
@@ -314,6 +368,35 @@ function JobDiscoveryContent() {
         )}
       </div>
 
+      {/* ── Recommended for You ── */}
+      <div className="glass-card rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-amber-200/40 dark:border-amber-800/30">
+        <div className="flex items-start gap-3">
+          <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <Sparkles className="size-4.5" />
+          </div>
+          <div>
+            <h2 className="font-heading text-sm font-bold text-slate-900 dark:text-white">Recommended for You</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {isLoadingRecs
+                ? "Ranking open roles against your skills, interests and CGPA…"
+                : "AI-ranked matches based on your skills, interests and CGPA."}
+            </p>
+          </div>
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant={showRecommended ? "default" : "outline"}
+          onClick={() => setShowRecommended(!showRecommended)}
+          className={`shrink-0 gap-1.5 text-xs font-semibold ${
+            showRecommended ? "btn-gradient-animate text-white shadow-sm" : ""
+          }`}
+        >
+          <Sparkles className="size-3.5" />
+          {showRecommended ? "Hide matches" : "Show matches"}
+        </Button>
+      </div>
+
       {/* ── Job Cards Grid ── */}
       {isLoading || isAuthLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -351,9 +434,10 @@ function JobDiscoveryContent() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {pagedData.items.map((job) => {
+          {displayItems.map((job) => {
             const deadlineInfo = formatRelativeDeadline(job.deadLine);
             const locationStyle = getLocationBadgeStyle(job.locationType);
+            const rec = showRecommended ? recommendations?.get(job.id) : undefined;
 
             return (
               <div
@@ -396,6 +480,24 @@ function JobDiscoveryContent() {
                       <span className="font-medium truncate">{job.companyName}</span>
                     </p>
                   </div>
+
+                  {/* AI match badge — skeleton while recommendations are in flight, resolves in place */}
+                  {showRecommended && isLoadingRecs && (
+                    <Skeleton className="h-5 w-24 rounded-md" />
+                  )}
+                  {rec && (
+                    <div className="space-y-1 animate-in fade-in duration-500">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold border tabular-nums ${getMatchBadgeStyle(rec.matchPercentage)}`}
+                      >
+                        <Sparkles className="size-3" />
+                        {rec.matchPercentage}% match
+                      </span>
+                      <p className="text-[11px] italic text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+                        {rec.reason}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Description preview */}
                   <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
