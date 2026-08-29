@@ -15,7 +15,9 @@ using InternLinkApi.Services.StudentSkillService;
 using InternLinkApi.Services.AtsService;
 using InternLinkApi.Services.AdminService;
 using InternLinkApi.Services.AssessmentService;
+using InternLinkApi.Services.AIService;
 using InternLinkApi.Services.CounselorAdvisingService;
+using InternLinkApi.Services.ResumeAnalysisService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -143,6 +145,16 @@ builder.Services.AddScoped<IAssessmentQuestionBankService, AssessmentQuestionBan
 builder.Services.AddScoped<IAssessmentSessionService, AssessmentSessionService>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddScoped<ICounselorAdvisingService, CounselorAdvisingService>();
+
+// ── AI Gateway (Prompt 29) ──────────────────────────────────────
+builder.Services.AddHttpClient<GeminiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    // Hung AI calls must fail fast so retry/fallback logic can take over.
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddTransient<ILlmClient>(sp => sp.GetRequiredService<GeminiClient>());
+builder.Services.AddScoped<IResumeAnalysisService, ResumeAnalysisService>();
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]

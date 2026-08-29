@@ -206,6 +206,13 @@ export default function StudentResumesPage() {
                     </Button>
                   </NextLink>
 
+                  <NextLink href={`/student/resumes/${resume.id}/analyze`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full text-xs font-semibold border-amber-300/60 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10">
+                      <Sparkles className="size-3.5 mr-1.5" />
+                      Analyze
+                    </Button>
+                  </NextLink>
+
                   {resume.downloadUrl ? (
                     <a
                       href={resume.downloadUrl}

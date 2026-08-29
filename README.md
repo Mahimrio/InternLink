@@ -149,6 +149,10 @@ See `.env.example` for all configurable options. Required for local dev:
 | `POSTGRES_DB` | Database name | `internlink_dev` |
 | `JWT_SECRET` | Generate with `openssl rand -base64 32` | `abc123...` |
 | `SMTP_*` | MailHog (included in docker-compose) for local email testing | `localhost:1025` |
+| `AiProvider__ApiKey` | Google Gemini API key ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)) | `AIza...` |
+| `AiProvider__Model` | Gemini model for the AI gateway | `gemini-3.6-flash` |
+
+> **AI provider choice:** Google Gemini (`gemini-3.6-flash`) is the primary LLM provider — chosen over OpenAI for its free tier (no billing setup needed for a university project), generous rate limits, and reliable structured/JSON output. All AI features route through the `ILlmClient` gateway, which logs every call's token usage and cost to the `AIHistory` ledger.
 
 ---
 

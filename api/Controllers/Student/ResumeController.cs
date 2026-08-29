@@ -1,5 +1,6 @@
 using System.Text.Json;
 using InternLinkApi.DTOs;
+using InternLinkApi.Services.ResumeAnalysisService;
 using InternLinkApi.Services.ResumeService;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,12 @@ namespace InternLinkApi.Controllers.Student;
 public class ResumeController : StudentApiControllerBase
 {
     private readonly IResumeService _resumeService;
+    private readonly IResumeAnalysisService _analysisService;
 
-    public ResumeController(IResumeService resumeService)
+    public ResumeController(IResumeService resumeService, IResumeAnalysisService analysisService)
     {
         _resumeService = resumeService;
+        _analysisService = analysisService;
     }
 
     [HttpPost]
@@ -72,6 +75,27 @@ public class ResumeController : StudentApiControllerBase
         {
             var list = await _resumeService.GetResumesAsync(CurrentUserId, ct);
             return Ok(list);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("{id:guid}/analyze")]
+    public async Task<IActionResult> AnalyzeResume(Guid id, [FromQuery] Guid? targetJobId, CancellationToken ct)
+    {
+        try
+        {
+            var score = await _analysisService.GetAtsScoreAsync(CurrentUserId, id, ct);
+
+            List<ResumeSuggestionDto>? suggestions = null;
+            if (targetJobId.HasValue)
+            {
+                suggestions = await _analysisService.GetImprovementSuggestionsAsync(CurrentUserId, id, targetJobId.Value, ct);
+            }
+
+            return Ok(new ResumeAnalysisResponseDto(score, suggestions));
         }
         catch (KeyNotFoundException ex)
         {
