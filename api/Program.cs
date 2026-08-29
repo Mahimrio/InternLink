@@ -17,6 +17,7 @@ using InternLinkApi.Services.AdminService;
 using InternLinkApi.Services.AssessmentService;
 using InternLinkApi.Services.AIService;
 using InternLinkApi.Services.CounselorAdvisingService;
+using InternLinkApi.Services.ResumeAnalysisService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -153,6 +154,7 @@ builder.Services.AddHttpClient<GeminiClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 builder.Services.AddTransient<ILlmClient>(sp => sp.GetRequiredService<GeminiClient>());
+builder.Services.AddScoped<IResumeAnalysisService, ResumeAnalysisService>();
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]
