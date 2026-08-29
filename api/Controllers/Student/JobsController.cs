@@ -1,5 +1,6 @@
 using InternLinkApi.DTOs;
 using InternLinkApi.Services.JobService;
+using InternLinkApi.Services.RecommendationService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +9,12 @@ namespace InternLinkApi.Controllers.Student;
 public class JobsController : StudentApiControllerBase
 {
     private readonly IJobService _jobService;
+    private readonly IRecommendationService _recommendationService;
 
-    public JobsController(IJobService jobService)
+    public JobsController(IJobService jobService, IRecommendationService recommendationService)
     {
         _jobService = jobService;
+        _recommendationService = recommendationService;
     }
 
     [HttpGet]
@@ -28,6 +31,20 @@ public class JobsController : StudentApiControllerBase
             var paged = await _jobService.GetPagedJobsForStudentAsync(
                 CurrentUserId, locationType, keyword, relevantToMe, page, pageSize, ct);
             return Ok(paged);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("recommended")]
+    public async Task<IActionResult> GetRecommendedJobs(CancellationToken ct = default)
+    {
+        try
+        {
+            var recommendations = await _recommendationService.GetRecommendedJobsAsync(CurrentUserId, ct);
+            return Ok(recommendations);
         }
         catch (KeyNotFoundException ex)
         {

@@ -17,6 +17,7 @@ using InternLinkApi.Services.AdminService;
 using InternLinkApi.Services.AssessmentService;
 using InternLinkApi.Services.AIService;
 using InternLinkApi.Services.CounselorAdvisingService;
+using InternLinkApi.Services.RecommendationService;
 using InternLinkApi.Services.ResumeAnalysisService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -155,6 +156,10 @@ builder.Services.AddHttpClient<GeminiClient>(client =>
 });
 builder.Services.AddTransient<ILlmClient>(sp => sp.GetRequiredService<GeminiClient>());
 builder.Services.AddScoped<IResumeAnalysisService, ResumeAnalysisService>();
+
+// Recommendation results are cached per student for ~1h to control token spend.
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
 // ── CORS ─────────────────────────────────────────────────────────────
 var allowedOrigins = (builder.Configuration["Cors:AllowedOrigins"]
