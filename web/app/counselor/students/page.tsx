@@ -173,9 +173,9 @@ export default function CounselorStudentsDirectoryPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground font-medium">Students Enrolled</p>
-              <p className="font-heading text-2xl font-bold text-slate-900 dark:text-white">
+              <div className="font-heading text-2xl font-bold text-slate-900 dark:text-white">
                 {isLoading ? <Skeleton className="h-7 w-12" /> : totalStudents}
-              </p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -187,9 +187,9 @@ export default function CounselorStudentsDirectoryPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground font-medium">Average CGPA</p>
-              <p className="font-heading text-2xl font-bold text-amber-700 dark:text-amber-300">
+              <div className="font-heading text-2xl font-bold text-amber-700 dark:text-amber-300">
                 {isLoading ? <Skeleton className="h-7 w-12" /> : avgCgpa}
-              </p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -201,9 +201,9 @@ export default function CounselorStudentsDirectoryPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground font-medium">Resumes Built</p>
-              <p className="font-heading text-2xl font-bold text-slate-900 dark:text-white">
+              <div className="font-heading text-2xl font-bold text-slate-900 dark:text-white">
                 {isLoading ? <Skeleton className="h-7 w-12" /> : totalResumes}
-              </p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -215,9 +215,9 @@ export default function CounselorStudentsDirectoryPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground font-medium">Applications</p>
-              <p className="font-heading text-2xl font-bold text-slate-900 dark:text-white">
+              <div className="font-heading text-2xl font-bold text-slate-900 dark:text-white">
                 {isLoading ? <Skeleton className="h-7 w-12" /> : totalApplications}
-              </p>
+              </div>
             </div>
           </CardContent>
         </Card>
