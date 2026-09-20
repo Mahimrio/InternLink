@@ -7,7 +7,7 @@ import * as z from "zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Briefcase, Loader2, Eye, EyeOff, Mail, Lock, ShieldCheck } from "lucide-react";
+import { Briefcase, Loader2, Eye, EyeOff, Mail, Lock, ShieldCheck, GraduationCap, Building2, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { setAuthData } = useAuth();
 
-  const { register, handleSubmit, formState: { errors }, setError } = useForm<z.infer<typeof loginSchema>>({
+  const { register, handleSubmit, formState: { errors }, setError, setValue: setLoginValue } = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
@@ -49,6 +49,62 @@ export default function LoginPage() {
     resolver: zodResolver(otpSchema),
     defaultValues: { code: "" },
   });
+
+  async function handleQuickLogin(email: string, pass: string) {
+    setLoginValue("email", email);
+    setLoginValue("password", pass);
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      if (data.otpRequired && data.otpToken) {
+        // Complete OTP automatically for test accounts in dev mode
+        const codeToUse = data.debugOtp;
+        if (codeToUse) {
+          const verifyRes = await fetch("/api/auth/verify-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ otpToken: data.otpToken, code: codeToUse }),
+          });
+          const verifyData = await verifyRes.json();
+          if (!verifyRes.ok) throw new Error(verifyData.error || "OTP verification failed");
+
+          setAuthData(verifyData.accessToken, verifyData.role);
+          toast.success(`Logged in as ${verifyData.role}!`);
+          const rolePath = verifyData.role.toLowerCase();
+          router.push(`/${rolePath}/dashboard`);
+          return;
+        }
+
+        // Fallback to manual OTP entry if debugOtp is missing
+        setOtpToken(data.otpToken);
+        setStep("otp");
+        toast.info("Please enter the verification code.");
+        return;
+      }
+
+      if (data.accessToken) {
+        setAuthData(data.accessToken, data.role);
+        toast.success(`Logged in as ${data.role}!`);
+        const rolePath = data.role.toLowerCase();
+        router.push(`/${rolePath}/dashboard`);
+      }
+    } catch (err: unknown) {
+      const e = err as Error;
+      toast.error(e.message || "An unexpected error occurred during quick login");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   async function onLoginSubmit(values: z.infer<typeof loginSchema>) {
     setIsSubmitting(true);
@@ -207,6 +263,86 @@ export default function LoginPage() {
                   "Sign In"
                 )}
               </Button>
+
+              {/* Quick 1-Click Login for Testing */}
+              <div className="pt-2">
+                <div className="relative mb-3">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border/60" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground font-semibold tracking-wider text-[10px]">
+                      Quick Test Logins (1-Click)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Student */}
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleQuickLogin("student@internlink.test", "Student@123")}
+                    className="group flex items-center gap-2 rounded-lg border border-teal-200/80 bg-teal-50/70 p-2 text-left transition-all hover:bg-teal-100/90 hover:border-teal-300 dark:border-teal-800/80 dark:bg-teal-950/40 dark:hover:bg-teal-900/60 disabled:opacity-50 cursor-pointer shadow-xs"
+                  >
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-teal-600 text-white shadow-xs group-hover:scale-105 transition-transform">
+                      <GraduationCap className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-teal-950 dark:text-teal-200 truncate">Student</div>
+                      <div className="text-[10px] text-teal-700/80 dark:text-teal-400 truncate">student@internlink</div>
+                    </div>
+                  </button>
+
+                  {/* Company */}
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleQuickLogin("hr@brainstation23.test", "Company@123")}
+                    className="group flex items-center gap-2 rounded-lg border border-blue-200/80 bg-blue-50/70 p-2 text-left transition-all hover:bg-blue-100/90 hover:border-blue-300 dark:border-blue-800/80 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 disabled:opacity-50 cursor-pointer shadow-xs"
+                  >
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-blue-600 text-white shadow-xs group-hover:scale-105 transition-transform">
+                      <Building2 className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-blue-950 dark:text-blue-200 truncate">Company</div>
+                      <div className="text-[10px] text-blue-700/80 dark:text-blue-400 truncate">hr@brainstation23</div>
+                    </div>
+                  </button>
+
+                  {/* Admin */}
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleQuickLogin("admin@internlink.test", "Admin@123")}
+                    className="group flex items-center gap-2 rounded-lg border border-purple-200/80 bg-purple-50/70 p-2 text-left transition-all hover:bg-purple-100/90 hover:border-purple-300 dark:border-purple-800/80 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 disabled:opacity-50 cursor-pointer shadow-xs"
+                  >
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-purple-600 text-white shadow-xs group-hover:scale-105 transition-transform">
+                      <ShieldCheck className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-purple-950 dark:text-purple-200 truncate">Admin</div>
+                      <div className="text-[10px] text-purple-700/80 dark:text-purple-400 truncate">admin@internlink</div>
+                    </div>
+                  </button>
+
+                  {/* Counselor */}
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleQuickLogin("counselor@internlink.test", "Counselor@123")}
+                    className="group flex items-center gap-2 rounded-lg border border-amber-200/80 bg-amber-50/70 p-2 text-left transition-all hover:bg-amber-100/90 hover:border-amber-300 dark:border-amber-800/80 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 disabled:opacity-50 cursor-pointer shadow-xs"
+                  >
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-amber-600 text-white shadow-xs group-hover:scale-105 transition-transform">
+                      <Users className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-amber-950 dark:text-amber-200 truncate">Counselor</div>
+                      <div className="text-[10px] text-amber-700/80 dark:text-amber-400 truncate">counselor@internlink</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
             </form>
           ) : (
             <form onSubmit={handleOtpSubmit(onOtpSubmit)} className="space-y-6">

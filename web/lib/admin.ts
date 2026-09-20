@@ -39,6 +39,10 @@ export interface AdminJob {
   deadLine: string;
   isApproved: boolean;
   isClosed: boolean;
+  /** "Internal" | "External" */
+  source: string;
+  externalSourceName: string | null;
+  externalApplyUrl: string | null;
 }
 
 export interface ApplicationsByStatus {
