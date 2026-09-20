@@ -19,6 +19,8 @@ using InternLinkApi.Services.AIService;
 using InternLinkApi.Services.CounselorAdvisingService;
 using InternLinkApi.Services.RecommendationService;
 using InternLinkApi.Services.ResumeAnalysisService;
+using InternLinkApi.Services.IngestionService;
+using InternLinkApi.BackgroundServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -156,6 +158,20 @@ builder.Services.AddHttpClient<GeminiClient>(client =>
 });
 builder.Services.AddTransient<ILlmClient>(sp => sp.GetRequiredService<GeminiClient>());
 builder.Services.AddScoped<IResumeAnalysisService, ResumeAnalysisService>();
+
+// ── External Job Ingestion ────────────────────────────────────────────
+// Named HttpClient with a dedicated timeout so sluggish job-board APIs
+// don't block the main request pipeline.
+builder.Services.AddHttpClient<ExternalJobIngestionService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+    client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json, text/plain, */*");
+});
+builder.Services.AddScoped<IExternalJobIngestionService, ExternalJobIngestionService>();
+
+// 12-hour recurring background sync (starts 45 s after host is up).
+builder.Services.AddHostedService<JobIngestionBackgroundService>();
 
 // Recommendation results are cached per student for ~1h to control token spend.
 builder.Services.AddMemoryCache();

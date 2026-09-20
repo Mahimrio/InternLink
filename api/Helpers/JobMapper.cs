@@ -11,7 +11,9 @@ public static class JobMapper
         {
             Id = job.Id,
             CompanyId = job.CompanyId,
-            CompanyName = job.Company?.CompanyName ?? string.Empty,
+            // For internal jobs: use the related Company entity name.
+            // For external jobs: fall back to the snapshot stored at ingestion time.
+            CompanyName = job.Company?.CompanyName ?? job.CompanyNameSnapshot ?? string.Empty,
             Title = job.Title,
             CoreDescription = job.CoreDescription,
             SelectionCriteria = job.SelectionCriteria,
@@ -23,6 +25,9 @@ public static class JobMapper
                 SkillName = js.Skill?.SkillName ?? string.Empty,
                 RequiredImportanceWeight = js.RequiredImportanceWeight,
             }).ToList() ?? [],
+            Source = job.Source.ToString(),
+            ExternalSourceName = job.ExternalSourceName,
+            ExternalApplyUrl = job.ExternalApplyUrl,
         };
     }
 
@@ -63,7 +68,9 @@ public static class JobMapper
             Id = application.Id,
             JobId = application.JobId,
             JobTitle = application.Job?.Title ?? string.Empty,
-            CompanyName = application.Job?.Company?.CompanyName ?? string.Empty,
+            CompanyName = application.Job?.Company?.CompanyName
+                          ?? application.Job?.CompanyNameSnapshot
+                          ?? string.Empty,
             ApplicationStatus = application.ApplicationStatus.ToString(),
             SubmittedAt = application.SubmittedAt,
             AttachedResumeId = application.AttachedResumeId,
@@ -73,5 +80,24 @@ public static class JobMapper
     public static List<ApplicationDto> ToDtoList(IEnumerable<Application> applications)
     {
         return applications.Select(ToDto).ToList();
+    }
+
+    /// <summary>Maps a Job entity to the Admin moderation DTO.</summary>
+    public static AdminJobDto ToAdminDto(Job job)
+    {
+        return new AdminJobDto
+        {
+            Id = job.Id,
+            Title = job.Title,
+            CompanyName = job.Company?.CompanyName ?? job.CompanyNameSnapshot ?? string.Empty,
+            Description = job.CoreDescription,
+            LocationType = job.LocationType.ToString(),
+            DeadLine = job.DeadLine,
+            IsApproved = job.IsApproved,
+            IsClosed = job.IsClosed,
+            Source = job.Source.ToString(),
+            ExternalSourceName = job.ExternalSourceName,
+            ExternalApplyUrl = job.ExternalApplyUrl,
+        };
     }
 }

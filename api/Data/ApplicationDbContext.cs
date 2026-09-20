@@ -70,12 +70,16 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
             .HasForeignKey<Company>(c => c.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // ----- Company -> Jobs (Cascade) -----
+        // ----- Company -> Jobs (optional FK — null for external jobs) -----
+        // External (aggregated) jobs have no Company entity; CompanyId is nullable.
+        // On company deletion we NULL-out the FK rather than cascade-deleting the job,
+        // so the posting history is preserved for analytics.
         builder.Entity<Job>()
             .HasOne(j => j.Company)
             .WithMany(c => c.Jobs)
             .HasForeignKey(j => j.CompanyId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // ----- Students -> Applications (Cascade) -----
         builder.Entity<Application>()
@@ -252,6 +256,17 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
 
         builder.Entity<Job>()
             .HasIndex(j => new { j.IsApproved, j.IsClosed });
+
+        // Index on Source for admin filtered queries (Internal vs External).
+        builder.Entity<Job>()
+            .HasIndex(j => j.Source);
+
+        // Partial unique index: prevents ingesting the same external job twice.
+        // The filter ensures NULLs (internal jobs) are excluded from uniqueness enforcement.
+        builder.Entity<Job>()
+            .HasIndex(j => new { j.ExternalSourceName, j.ExternalJobId })
+            .IsUnique()
+            .HasFilter("\"ExternalSourceName\" IS NOT NULL AND \"ExternalJobId\" IS NOT NULL");
 
         builder.Entity<Application>()
             .HasIndex(a => a.ApplicationStatus);

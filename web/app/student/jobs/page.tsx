@@ -23,7 +23,8 @@ import {
   ArrowRight,
   Filter,
   X,
-  Briefcase
+  Briefcase,
+  ExternalLink
 } from "lucide-react";
 
 /* ────────────────────────────── Types ────────────────────────────── */
@@ -36,7 +37,7 @@ interface JobSkillDto {
 
 interface JobDto {
   id: string;
-  companyId: string;
+  companyId: string | null;
   companyName: string;
   title: string;
   coreDescription: string;
@@ -45,6 +46,10 @@ interface JobDto {
   deadLine: string;
   hasApplied: boolean;
   requiredSkills: JobSkillDto[];
+  /** "Internal" | "External" */
+  source: string;
+  externalSourceName: string | null;
+  externalApplyUrl: string | null;
 }
 
 interface PagedResult<T> {
@@ -327,6 +332,56 @@ function JobDiscoveryContent() {
           </div>
         </div>
 
+        {/* Quick Portal Source Filter Chips */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+          <span className="text-xs font-medium text-slate-400 dark:text-slate-500 mr-1">Portal Filter:</span>
+          <button
+            type="button"
+            onClick={() => {
+              if (keywordInput.toLowerCase() === "bdjobs" || keywordInput.toLowerCase() === "arbeitnow") {
+                setKeywordInput("");
+              }
+              setCurrentPage(1);
+            }}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${
+              !keywordInput || (keywordInput.toLowerCase() !== "bdjobs" && keywordInput.toLowerCase() !== "arbeitnow")
+                ? "bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100 shadow-sm"
+                : "bg-white/80 dark:bg-slate-900/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400"
+            }`}
+          >
+            All Sources ({pagedData?.totalCount ?? 0})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setKeywordInput("BDJobs");
+              setCurrentPage(1);
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${
+              keywordInput.toLowerCase() === "bdjobs"
+                ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20"
+                : "bg-blue-50/70 text-blue-700 border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 hover:bg-blue-100/80"
+            }`}
+          >
+            <span className="size-2 rounded-full bg-blue-500 animate-pulse" />
+            BDJobs Postings
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setKeywordInput("Arbeitnow");
+              setCurrentPage(1);
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${
+              keywordInput.toLowerCase() === "arbeitnow"
+                ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-600/20"
+                : "bg-violet-50/70 text-violet-700 border-violet-200/80 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800 hover:bg-violet-100/80"
+            }`}
+          >
+            Arbeitnow (Remote Tech)
+          </button>
+        </div>
+
         {/* Active Filter Chips */}
         {(keywordInput || locationType || relevantToMe) && (
           <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
@@ -446,13 +501,28 @@ function JobDiscoveryContent() {
               >
                 <div className="space-y-3.5">
                   {/* Top row badges */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${locationStyle}`}
-                    >
-                      <MapPin className="size-3" />
-                      {job.locationType}
-                    </span>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${locationStyle}`}
+                      >
+                        <MapPin className="size-3" />
+                        {job.locationType}
+                      </span>
+
+                      {job.source === "External" && (
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${
+                            job.externalSourceName?.toLowerCase() === "bdjobs"
+                              ? "bg-blue-50 text-blue-700 border-blue-200/70 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800"
+                              : "bg-violet-50 text-violet-700 border-violet-200/60 dark:bg-violet-950/50 dark:text-violet-300 dark:border-violet-800"
+                          }`}
+                        >
+                          <ExternalLink className="size-2.5" />
+                          via {job.externalSourceName ?? "External"}
+                        </span>
+                      )}
+                    </div>
 
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border ${

@@ -2,6 +2,7 @@
 bin/
 obj/
 out/
+.dotnet_home/
 *.user
 *.suo
 *.userosscache
@@ -83,3 +84,9 @@ test-auth.ps1
 *build_prompt*
 *.pdf
 
+# ===== Local Job Documentation =====
+JOB.md
+job.md
+
+# ===== Local .NET CLI Home =====
+.dotnet_home*

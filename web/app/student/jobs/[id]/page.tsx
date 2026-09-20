@@ -19,7 +19,8 @@ import {
   Layers,
   ShieldCheck,
   Award,
-  Plus
+  Plus,
+  ExternalLink
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,7 +34,7 @@ interface JobSkillDto {
 
 interface JobDetailDto {
   id: string;
-  companyId: string;
+  companyId: string | null;
   companyName: string;
   title: string;
   coreDescription: string;
@@ -42,6 +43,10 @@ interface JobDetailDto {
   deadLine: string;
   hasApplied: boolean;
   requiredSkills: JobSkillDto[];
+  /** "Internal" | "External" */
+  source: string;
+  externalSourceName: string | null;
+  externalApplyUrl: string | null;
 }
 
 interface ResumeDto {
@@ -239,6 +244,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 {job.locationType}
               </span>
 
+              {job.source === "External" && (
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold border ${
+                    job.externalSourceName?.toLowerCase() === "bdjobs"
+                      ? "bg-blue-50 text-blue-700 border-blue-200/70 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800"
+                      : "bg-violet-50 text-violet-700 border-violet-200/60 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800"
+                  }`}
+                >
+                  <ExternalLink className="size-3" />
+                  via {job.externalSourceName ?? "External Portal"}
+                </span>
+              )}
+
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium border ${
                   deadlineInfo.isUrgent
@@ -350,94 +368,142 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         {/* Right Column (1/3) — Sticky Apply Card */}
         <div className="space-y-6">
           <div className="glass-card-featured rounded-2xl p-6 space-y-5 sticky top-6">
-            <div>
-              <span className="text-[10px] font-semibold tracking-wider uppercase text-teal-700 dark:text-teal-400">
-                Application Action
-              </span>
-              <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white mt-0.5">
-                Apply for Position
-              </h3>
-            </div>
-
-            {/* Resume Selection or Builder Link */}
-            {resumes.length === 0 ? (
-              <div className="p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-2.5">
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
-                  <AlertTriangle className="size-4 text-amber-600" />
-                  No Finalized Resume Found
+            {job.source === "External" ? (
+              /* ── External job: redirect to portal ── */
+              <>
+                <div>
+                  <span className="text-[10px] font-semibold tracking-wider uppercase text-violet-600 dark:text-violet-400">
+                    External Posting
+                  </span>
+                  <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white mt-0.5">
+                    Apply on {job.externalSourceName ?? "Source Portal"}
+                  </h3>
                 </div>
-                <p className="text-xs text-amber-700 dark:text-amber-300/90 leading-relaxed">
-                  You must build and finalize an ATS resume before submitting your application.
-                </p>
-                <Link href="/student/resumes/builder" className="block pt-1">
-                  <Button size="sm" className="w-full text-xs font-semibold btn-gradient-animate text-white">
-                    <Plus className="size-3.5 mr-1.5" />
-                    Build & Finalize Resume
+
+                <div className="p-3.5 rounded-xl bg-violet-50/80 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 text-xs text-violet-800 dark:text-violet-200 leading-relaxed">
+                  This position is sourced from{" "}
+                  <span className="font-semibold">{job.externalSourceName ?? "an external portal"}</span>.
+                  Clicking below will open the original job posting where you can submit your application directly.
+                </div>
+
+                {job.externalApplyUrl ? (
+                  <a
+                    href={job.externalApplyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full h-11 items-center justify-center gap-2 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-600/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <ExternalLink className="size-4" />
+                    Apply on {job.externalSourceName ?? "Portal"}
+                  </a>
+                ) : (
+                  <div className="text-xs text-slate-400 text-center">
+                    Apply URL not available. Search for this job on {job.externalSourceName}.
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <p className="flex items-center gap-1">
+                    <ExternalLink className="size-3 text-violet-500" /> Sourced from {job.externalSourceName}
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <ShieldCheck className="size-3 text-teal-500" /> Curated by InternLink admins
+                  </p>
+                </div>
+              </>
+            ) : (
+              /* ── Internal job: standard ATS apply flow ── */
+              <>
+                <div>
+                  <span className="text-[10px] font-semibold tracking-wider uppercase text-teal-700 dark:text-teal-400">
+                    Application Action
+                  </span>
+                  <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white mt-0.5">
+                    Apply for Position
+                  </h3>
+                </div>
+
+                {/* Resume Selection or Builder Link */}
+                {resumes.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-2.5">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
+                      <AlertTriangle className="size-4 text-amber-600" />
+                      No Finalized Resume Found
+                    </div>
+                    <p className="text-xs text-amber-700 dark:text-amber-300/90 leading-relaxed">
+                      You must build and finalize an ATS resume before submitting your application.
+                    </p>
+                    <Link href="/student/resumes/builder" className="block pt-1">
+                      <Button size="sm" className="w-full text-xs font-semibold btn-gradient-animate text-white">
+                        <Plus className="size-3.5 mr-1.5" />
+                        Build & Finalize Resume
+                      </Button>
+                    </Link>
+                  </div>
+                ) : resumes.length === 1 ? (
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-1">
+                    <span className="text-[10px] text-slate-400 font-medium">Attached Resume</span>
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <FileText className="size-3.5 text-teal-600" />
+                      Primary Finalized Resume
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Select Resume to Attach:
+                    </label>
+                    <select
+                      value={selectedResumeId}
+                      onChange={(e) => setSelectedResumeId(e.target.value)}
+                      className="w-full h-10 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    >
+                      {resumes.map((r, i) => (
+                        <option key={r.id} value={r.id}>
+                          Resume #{i + 1} ({new Date(r.lastModified).toLocaleDateString()})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Main Apply Button */}
+                {isApplied ? (
+                  <Button
+                    disabled
+                    className="w-full h-11 text-xs font-semibold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-300 dark:border-teal-700 cursor-not-allowed"
+                  >
+                    <CheckCircle2 className="size-4 mr-1.5 text-teal-600" />
+                    Already Applied
                   </Button>
-                </Link>
-              </div>
-            ) : resumes.length === 1 ? (
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-1">
-                <span className="text-[10px] text-slate-400 font-medium">Attached Resume</span>
-                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <FileText className="size-3.5 text-teal-600" />
-                  Primary Finalized Resume
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Select Resume to Attach:
-                </label>
-                <select
-                  value={selectedResumeId}
-                  onChange={(e) => setSelectedResumeId(e.target.value)}
-                  className="w-full h-10 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                >
-                  {resumes.map((r, i) => (
-                    <option key={r.id} value={r.id}>
-                      Resume #{i + 1} ({new Date(r.lastModified).toLocaleDateString()})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+                ) : resumes.length === 0 ? (
+                  <Button
+                    disabled
+                    className="w-full h-11 text-xs font-semibold bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
+                  >
+                    Finalize a Resume First
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleApply}
+                    disabled={isApplying}
+                    className="w-full h-11 text-xs font-semibold btn-gradient-animate text-white shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {isApplying ? "Submitting Application..." : "Submit Application Now"}
+                  </Button>
+                )}
 
-            {/* Main Apply Button */}
-            {isApplied ? (
-              <Button
-                disabled
-                className="w-full h-11 text-xs font-semibold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-300 dark:border-teal-700 cursor-not-allowed"
-              >
-                <CheckCircle2 className="size-4 mr-1.5 text-teal-600" />
-                Already Applied
-              </Button>
-            ) : resumes.length === 0 ? (
-              <Button
-                disabled
-                className="w-full h-11 text-xs font-semibold bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
-              >
-                Finalize a Resume First
-              </Button>
-            ) : (
-              <Button
-                onClick={handleApply}
-                disabled={isApplying}
-                className="w-full h-11 text-xs font-semibold btn-gradient-animate text-white shadow-lg shadow-teal-600/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {isApplying ? "Submitting Application..." : "Submit Application Now"}
-              </Button>
+                {/* Security Guarantee */}
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <p className="flex items-center gap-1">
+                    <ShieldCheck className="size-3 text-teal-500" /> Verified employer posting
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <Award className="size-3 text-amber-500" /> Matches student career board guidelines
+                  </p>
+                </div>
+              </>
             )}
-
-            {/* Security Guarantee */}
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 space-y-1">
-              <p className="flex items-center gap-1">
-                <ShieldCheck className="size-3 text-teal-500" /> Verified employer posting
-              </p>
-              <p className="flex items-center gap-1">
-                <Award className="size-3 text-amber-500" /> Matches student career board guidelines
-              </p>
-            </div>
           </div>
         </div>
       </div>

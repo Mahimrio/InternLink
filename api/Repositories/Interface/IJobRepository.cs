@@ -1,4 +1,5 @@
 using InternLinkApi.Models;
+using InternLinkApi.Models.Enums;
 
 namespace InternLinkApi.Repositories.Interface;
 
@@ -31,4 +32,13 @@ public interface IJobRepository : IRepository<Job>
     // Admin moderation queue: all jobs filtered by approval state, with company included.
     Task<(IReadOnlyList<Job> Items, int TotalCount)> GetPagedByApprovalAsync(
         bool approved, int page, int pageSize, CancellationToken ct = default);
+
+    // ── External job ingestion helpers ───────────────────────────────────────
+
+    /// <summary>
+    /// Returns true if a job with the given source-portal name and external ID already exists.
+    /// Used by the ingestion pipeline to skip duplicates without a full SELECT.
+    /// </summary>
+    Task<bool> ExistsExternalJobAsync(string sourceName, string externalId, CancellationToken ct = default);
 }
+

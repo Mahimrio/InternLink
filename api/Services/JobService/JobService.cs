@@ -79,6 +79,14 @@ public class JobService : IJobService
             throw new KeyNotFoundException("Job not found or is no longer accepting applications.");
         }
 
+        // External jobs cannot be applied to through the internal ATS.
+        // The frontend is expected to redirect students to job.ExternalApplyUrl instead.
+        if (job.Source == JobSource.External)
+        {
+            throw new InvalidOperationException(
+                "This is an external job posting. Please apply directly on the source portal using the provided link.");
+        }
+
         var resume = await _resumeRepo.GetByIdAndStudentIdAsync(resumeId, student.Id, ct);
         if (resume is null)
         {

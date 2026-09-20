@@ -8,5 +8,8 @@ public enum IntegrationFeature
     CoverLetter,
     InterviewQuestions,
     MockInterview,
-    SkillGap
+    SkillGap,
+
+    /// <summary>AI smart-paste: structured field extraction from a raw external job description.</summary>
+    ExternalJobParsing
 }
