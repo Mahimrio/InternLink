@@ -39,7 +39,10 @@ public class JobRepository : Repository<Job>, IJobRepository
             var pattern = $"%{keyword.Trim()}%";
             query = query.Where(j =>
                 EF.Functions.ILike(j.Title, pattern)
-                || EF.Functions.ILike(j.CoreDescription, pattern));
+                || EF.Functions.ILike(j.CoreDescription, pattern)
+                || (j.ExternalSourceName != null && EF.Functions.ILike(j.ExternalSourceName, pattern))
+                || (j.CompanyNameSnapshot != null && EF.Functions.ILike(j.CompanyNameSnapshot, pattern))
+                || (j.Company != null && EF.Functions.ILike(j.Company.CompanyName, pattern)));
         }
 
         if (relevantSkillIds is not null)
@@ -58,7 +61,8 @@ public class JobRepository : Repository<Job>, IJobRepository
         var safePageSize = pageSize < 1 ? 20 : (pageSize > 100 ? 100 : pageSize);
 
         var items = await query
-            .OrderBy(j => j.DeadLine)
+            .OrderByDescending(j => j.LastSyncedAt)
+            .ThenBy(j => j.DeadLine)
             .ThenByDescending(j => j.Id)
             .Skip((safePage - 1) * safePageSize)
             .Take(safePageSize)
@@ -175,5 +179,11 @@ public class JobRepository : Repository<Job>, IJobRepository
             .ToListAsync(ct);
 
         return (items, totalCount);
+    }
+
+    public async Task<bool> ExistsExternalJobAsync(string sourceName, string externalId, CancellationToken ct = default)
+    {
+        return await Set.AnyAsync(
+            j => j.ExternalSourceName == sourceName && j.ExternalJobId == externalId, ct);
     }
 }
