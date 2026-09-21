@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useId } from "react";
+import React, { useState, useEffect, useCallback, useId } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,6 @@ import {
   RotateCw,
   Loader2,
   CheckCircle2,
-  FileText,
   AlertCircle,
   Building2,
   Briefcase
@@ -50,11 +49,6 @@ interface GenerateResponse {
   generatedText: string;
 }
 
-interface PdfResponse {
-  downloadUrl: string;
-  documentPath: string;
-}
-
 export function CoverLetterModal({
   isOpen,
   onOpenChange,
@@ -68,7 +62,6 @@ export function CoverLetterModal({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
-  const [hasFetchedSaved, setHasFetchedSaved] = useState(false);
   const [isSavedLocally, setIsSavedLocally] = useState(false);
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -76,45 +69,7 @@ export function CoverLetterModal({
 
   const textareaId = useId();
 
-  // Load existing saved cover letter if any when dialog opens
-  useEffect(() => {
-    if (!isOpen || !token || !jobId) return;
-
-    let isMounted = true;
-
-    async function loadSaved() {
-      try {
-        const res = await apiClient<SavedCoverLetterResponse>(
-          `/api/student/jobs/${jobId}/cover-letter`,
-          { token }
-        );
-
-        if (!isMounted) return;
-
-        if (res?.hasSaved && res.coverLetter?.content) {
-          setText(res.coverLetter.content);
-          setIsSavedLocally(true);
-        } else if (!text) {
-          // If no draft exists yet, automatically trigger initial AI generation
-          handleGenerate();
-        }
-      } catch {
-        if (!text) {
-          handleGenerate();
-        }
-      } finally {
-        if (isMounted) setHasFetchedSaved(true);
-      }
-    }
-
-    loadSaved();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isOpen, jobId, token]);
-
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
     if (!token || !jobId) return;
 
     try {
@@ -138,7 +93,41 @@ export function CoverLetterModal({
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [jobId, token]);
+
+  // Load existing saved cover letter if any when dialog opens
+  useEffect(() => {
+    if (!isOpen || !token || !jobId) return;
+
+    let isMounted = true;
+
+    async function loadSaved() {
+      try {
+        const res = await apiClient<SavedCoverLetterResponse>(
+          `/api/student/jobs/${jobId}/cover-letter`,
+          { token }
+        );
+
+        if (!isMounted) return;
+
+        if (res?.hasSaved && res.coverLetter?.content) {
+          setText(res.coverLetter.content);
+          setIsSavedLocally(true);
+        } else {
+          // If no draft exists yet, automatically trigger initial AI generation
+          handleGenerate();
+        }
+      } catch {
+        handleGenerate();
+      }
+    }
+
+    loadSaved();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, jobId, token, handleGenerate]);
 
   const handleSave = async () => {
     if (!token || !jobId) return;

@@ -7,11 +7,7 @@ import {
   Plus,
   Loader2,
   ExternalLink,
-  Building2,
-  Calendar,
-  MapPin,
   FileText,
-  ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
 import {
