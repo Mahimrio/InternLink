@@ -19,4 +19,5 @@ public class Student
     public ICollection<StudentSkill> StudentSkills { get; set; } = [];
     public ICollection<CounselorFeedback> CounselorFeedbacks { get; set; } = [];
     public ICollection<CoverLetter> CoverLetters { get; set; } = [];
+    public ICollection<MockInterviewSession> MockInterviewSessions { get; set; } = [];
 }

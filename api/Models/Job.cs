@@ -61,4 +61,5 @@ public class Job
     public ICollection<Application> Applications { get; set; } = [];
     public ICollection<JobSkill> JobSkills { get; set; } = [];
     public ICollection<CoverLetter> CoverLetters { get; set; } = [];
+    public ICollection<MockInterviewSession> MockInterviewSessions { get; set; } = [];
 }
