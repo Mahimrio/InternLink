@@ -10,6 +10,7 @@ public class Application
     public DateTimeOffset SubmittedAt { get; set; } = DateTimeOffset.UtcNow;
     public ApplicationStatus ApplicationStatus { get; set; } = ApplicationStatus.Applied;
     public Guid? AttachedResumeId { get; set; }
+    public string? CoverLetterText { get; set; }
 
     public Job Job { get; set; } = null!;
     public Student Student { get; set; } = null!;

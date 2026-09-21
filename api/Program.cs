@@ -19,6 +19,7 @@ using InternLinkApi.Services.AIService;
 using InternLinkApi.Services.CounselorAdvisingService;
 using InternLinkApi.Services.RecommendationService;
 using InternLinkApi.Services.ResumeAnalysisService;
+using InternLinkApi.Services.CoverLetterService;
 using InternLinkApi.Services.IngestionService;
 using InternLinkApi.BackgroundServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -158,6 +159,8 @@ builder.Services.AddHttpClient<GeminiClient>(client =>
 });
 builder.Services.AddTransient<ILlmClient>(sp => sp.GetRequiredService<GeminiClient>());
 builder.Services.AddScoped<IResumeAnalysisService, ResumeAnalysisService>();
+builder.Services.AddScoped<ICoverLetterPdfService, CoverLetterPdfService>();
+builder.Services.AddScoped<ICoverLetterService, CoverLetterService>();
 
 // ── External Job Ingestion ────────────────────────────────────────────
 // Named HttpClient with a dedicated timeout so sluggish job-board APIs
@@ -191,6 +194,7 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
+            .WithExposedHeaders("Content-Disposition")
             .SetIsOriginAllowed(origin =>
             {
                 // Allow explicit configured origins

@@ -60,4 +60,5 @@ public class Job
     public Company? Company { get; set; }
     public ICollection<Application> Applications { get; set; } = [];
     public ICollection<JobSkill> JobSkills { get; set; } = [];
+    public ICollection<CoverLetter> CoverLetters { get; set; } = [];
 }
