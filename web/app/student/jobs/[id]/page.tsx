@@ -20,9 +20,11 @@ import {
   ShieldCheck,
   Award,
   Plus,
-  ExternalLink
+  ExternalLink,
+  Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
+import { CoverLetterModal } from "@/components/student/cover-letter-modal";
 
 /* ────────────────────────────── Types ────────────────────────────── */
 
@@ -113,6 +115,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [isApplying, setIsApplying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasAppliedLocally, setHasAppliedLocally] = useState(false);
+  const [isCoverLetterOpen, setIsCoverLetterOpen] = useState(false);
+  const [hasCoverLetterSaved, setHasCoverLetterSaved] = useState(false);
 
   useEffect(() => {
     if (!accessToken) {
@@ -126,12 +130,17 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
     async function loadData() {
       try {
-        const [jobRes, resumesRes] = await Promise.allSettled([
+        const [jobRes, resumesRes, coverLetterRes] = await Promise.allSettled([
           apiClient<JobDetailDto>(`/api/student/jobs/${jobId}`, { token: accessToken }),
           apiClient<ResumeDto[]>(`/api/student/resumes`, { token: accessToken }),
+          apiClient<{ hasSaved: boolean }>(`/api/student/jobs/${jobId}/cover-letter`, { token: accessToken }),
         ]);
 
         if (!isMounted) return;
+
+        if (coverLetterRes.status === "fulfilled" && coverLetterRes.value?.hasSaved) {
+          setHasCoverLetterSaved(true);
+        }
 
         if (jobRes.status === "fulfilled") {
           setJob(jobRes.value);
@@ -493,6 +502,37 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   </Button>
                 )}
 
+                {/* AI Cover Letter Assistant Action */}
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setIsCoverLetterOpen(true)}
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-teal-200/80 dark:border-teal-800/80 bg-gradient-to-r from-teal-50/60 via-white to-amber-50/40 dark:from-teal-950/40 dark:via-slate-900 dark:to-amber-950/20 hover:border-teal-400 dark:hover:border-teal-600 transition-all text-left shadow-xs hover:shadow-sm group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="size-8 rounded-lg bg-teal-100 dark:bg-teal-900/60 flex items-center justify-center text-teal-700 dark:text-teal-300 group-hover:scale-105 transition-transform shadow-xs">
+                        <Sparkles className="size-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                          <span>AI Cover Letter</span>
+                          {hasCoverLetterSaved && (
+                            <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded">
+                              Saved
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {hasCoverLetterSaved ? "View or refine saved letter" : "Generate tailored letter & PDF"}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 group-hover:translate-x-0.5 transition-transform">
+                      {hasCoverLetterSaved ? "Edit →" : "Generate →"}
+                    </span>
+                  </button>
+                </div>
+
                 {/* Security Guarantee */}
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 space-y-1">
                   <p className="flex items-center gap-1">
@@ -507,6 +547,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </div>
         </div>
       </div>
+
+      {/* AI Cover Letter Generator Modal */}
+      {accessToken && (
+        <CoverLetterModal
+          isOpen={isCoverLetterOpen}
+          onOpenChange={setIsCoverLetterOpen}
+          jobId={job.id}
+          jobTitle={job.title}
+          companyName={job.companyName}
+          token={accessToken}
+          onSavedSuccess={() => setHasCoverLetterSaved(true)}
+        />
+      )}
     </PageContainer>
   );
 }

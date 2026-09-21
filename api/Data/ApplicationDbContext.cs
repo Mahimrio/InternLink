@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
     public DbSet<AIHistory> AIHistories => Set<AIHistory>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
+    public DbSet<CoverLetter> CoverLetters => Set<CoverLetter>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -273,6 +274,25 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
 
         builder.Entity<Application>()
             .HasIndex(a => new { a.JobId, a.StudentId })
+            .IsUnique();
+
+        // ----- CoverLetters -----
+        builder.Entity<CoverLetter>().ToTable("CoverLetters");
+
+        builder.Entity<CoverLetter>()
+            .HasOne(cl => cl.Student)
+            .WithMany(s => s.CoverLetters)
+            .HasForeignKey(cl => cl.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CoverLetter>()
+            .HasOne(cl => cl.Job)
+            .WithMany(j => j.CoverLetters)
+            .HasForeignKey(cl => cl.JobId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<CoverLetter>()
+            .HasIndex(cl => new { cl.StudentId, cl.JobId })
             .IsUnique();
     }
 }
