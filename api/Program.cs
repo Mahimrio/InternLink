@@ -20,6 +20,7 @@ using InternLinkApi.Services.CounselorAdvisingService;
 using InternLinkApi.Services.RecommendationService;
 using InternLinkApi.Services.ResumeAnalysisService;
 using InternLinkApi.Services.CoverLetterService;
+using InternLinkApi.Services.InterviewPrepService;
 using InternLinkApi.Services.IngestionService;
 using InternLinkApi.BackgroundServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -161,6 +162,7 @@ builder.Services.AddTransient<ILlmClient>(sp => sp.GetRequiredService<GeminiClie
 builder.Services.AddScoped<IResumeAnalysisService, ResumeAnalysisService>();
 builder.Services.AddScoped<ICoverLetterPdfService, CoverLetterPdfService>();
 builder.Services.AddScoped<ICoverLetterService, CoverLetterService>();
+builder.Services.AddScoped<IInterviewPrepService, InterviewPrepService>();
 
 // ── External Job Ingestion ────────────────────────────────────────────
 // Named HttpClient with a dedicated timeout so sluggish job-board APIs

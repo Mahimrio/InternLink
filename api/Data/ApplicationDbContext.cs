@@ -28,6 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
     public DbSet<CoverLetter> CoverLetters => Set<CoverLetter>();
+    public DbSet<MockInterviewSession> MockInterviewSessions => Set<MockInterviewSession>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -294,5 +295,23 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
         builder.Entity<CoverLetter>()
             .HasIndex(cl => new { cl.StudentId, cl.JobId })
             .IsUnique();
+
+        // ----- MockInterviewSessions -----
+        builder.Entity<MockInterviewSession>().ToTable("MockInterviewSessions");
+
+        builder.Entity<MockInterviewSession>()
+            .HasOne(mis => mis.Student)
+            .WithMany(s => s.MockInterviewSessions)
+            .HasForeignKey(mis => mis.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<MockInterviewSession>()
+            .HasOne(mis => mis.Job)
+            .WithMany(j => j.MockInterviewSessions)
+            .HasForeignKey(mis => mis.JobId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<MockInterviewSession>()
+            .HasIndex(mis => new { mis.StudentId, mis.Status });
     }
 }

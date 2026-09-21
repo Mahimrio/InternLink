@@ -52,7 +52,10 @@ public class GeminiClient : ILlmClient
             throw new AiServiceException("AI features are not configured on this server.");
         }
 
-        var model = _config["AiProvider:Model"] ?? "gemini-3.6-flash";
+        var primaryModel = _config["AiProvider:Model"] ?? "gemini-3.5-flash";
+        var candidateModels = new[] { primaryModel, "gemini-3.5-flash", "gemini-3.6-flash", "gemini-2.5-flash-lite" }
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
         var payload = JsonSerializer.Serialize(new
         {
@@ -60,7 +63,7 @@ public class GeminiClient : ILlmClient
             contents = new[] { new { parts = new[] { new { text = userPrompt } } } },
         });
 
-        var response = await SendWithRetryOnceAsync(model, apiKey, payload, ct);
+        var response = await SendWithRetryAndFallbackAsync(candidateModels, apiKey, payload, ct);
         var llmResponse = await ParseResponseAsync(response, ct);
 
         await WriteLedgerAsync(userId, feature, userPrompt, llmResponse.EstimatedCostUsd, ct);
@@ -72,64 +75,65 @@ public class GeminiClient : ILlmClient
     public static decimal ComputeCostUsd(int promptTokens, int completionTokens) =>
         (promptTokens * InputPricePerMillionTokensUsd + completionTokens * OutputPricePerMillionTokensUsd) / 1_000_000m;
 
-    private async Task<HttpResponseMessage> SendWithRetryOnceAsync(string model, string apiKey, string payload, CancellationToken ct)
+    private async Task<HttpResponseMessage> SendWithRetryAndFallbackAsync(
+        string[] models, string apiKey, string payload, CancellationToken ct)
     {
-        for (var attempt = 0; ; attempt++)
+        Exception? lastException = null;
+
+        foreach (var model in models)
         {
-            try
+            for (var attempt = 0; attempt < 2; attempt++)
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, $"v1beta/models/{model}:generateContent")
+                try
                 {
-                    Content = new StringContent(payload, Encoding.UTF8, "application/json"),
-                };
-                request.Headers.Add("x-goog-api-key", apiKey);
+                    using var request = new HttpRequestMessage(HttpMethod.Post, $"v1beta/models/{model}:generateContent")
+                    {
+                        Content = new StringContent(payload, Encoding.UTF8, "application/json"),
+                    };
+                    request.Headers.Add("x-goog-api-key", apiKey);
 
-                var response = await _http.SendAsync(request, ct);
+                    var response = await _http.SendAsync(request, ct);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return response;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return response;
+                    }
+
+                    var isTransient = response.StatusCode is HttpStatusCode.TooManyRequests
+                        or HttpStatusCode.InternalServerError
+                        or HttpStatusCode.BadGateway
+                        or HttpStatusCode.ServiceUnavailable;
+
+                    var body = await response.Content.ReadAsStringAsync(ct);
+                    response.Dispose();
+
+                    if (isTransient && attempt == 0)
+                    {
+                        _logger.LogWarning("Transient failure with {Model} ({StatusCode}), retrying once.", model, response.StatusCode);
+                        await Task.Delay(RetryDelay, ct);
+                        continue;
+                    }
+
+                    _logger.LogWarning("AI model {Model} returned {StatusCode}: {Body}. Trying fallback candidate if available.", model, response.StatusCode, Truncate(body, 200));
+                    lastException = new AiServiceException($"The AI model {model} returned {response.StatusCode}.");
+                    break; // break to try next model in candidateModels
                 }
-
-                var isTransient = response.StatusCode is HttpStatusCode.TooManyRequests
-                    or HttpStatusCode.InternalServerError
-                    or HttpStatusCode.BadGateway
-                    or HttpStatusCode.ServiceUnavailable;
-
-                var body = await response.Content.ReadAsStringAsync(ct);
-                response.Dispose();
-
-                if (isTransient && attempt == 0)
+                catch (HttpRequestException ex)
                 {
-                    _logger.LogWarning("Transient AI provider failure ({StatusCode}), retrying once.", response.StatusCode);
-                    await Task.Delay(RetryDelay, ct);
-                    continue;
+                    _logger.LogWarning(ex, "Connection failure with {Model}, trying fallback.", model);
+                    lastException = new AiServiceException("The AI service is currently unavailable.", ex);
+                    if (attempt == 0) await Task.Delay(RetryDelay, ct);
                 }
-
-                // Non-transient (e.g. 400 malformed input) or retry exhausted — retrying won't fix it.
-                _logger.LogError("AI provider returned {StatusCode}: {Body}", response.StatusCode, Truncate(body, 500));
-                throw new AiServiceException("The AI service is currently unavailable. Please try again later.");
-            }
-            catch (HttpRequestException ex) when (attempt == 0)
-            {
-                _logger.LogWarning(ex, "AI provider connection failure, retrying once.");
-                await Task.Delay(RetryDelay, ct);
-            }
-            catch (TaskCanceledException ex) when (!ct.IsCancellationRequested && attempt == 0)
-            {
-                // HttpClient timeout (not caller cancellation) — transient, retry once.
-                _logger.LogWarning(ex, "AI provider request timed out, retrying once.");
-                await Task.Delay(RetryDelay, ct);
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new AiServiceException("The AI service is currently unavailable. Please try again later.", ex);
-            }
-            catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
-            {
-                throw new AiServiceException("The AI service took too long to respond. Please try again later.", ex);
+                catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+                {
+                    _logger.LogWarning(ex, "Request timeout with {Model}, trying fallback.", model);
+                    lastException = new AiServiceException("The AI service took too long to respond.", ex);
+                    if (attempt == 0) await Task.Delay(RetryDelay, ct);
+                }
             }
         }
+
+        throw lastException ?? new AiServiceException("The AI service is currently unavailable. Please try again later.");
     }
 
     private async Task<LlmResponse> ParseResponseAsync(HttpResponseMessage response, CancellationToken ct)
